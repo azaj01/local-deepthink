@@ -71,11 +71,12 @@ The **Qualitative Neural Network (QNN)** algorithm that powers this system is gr
 
 ## Changelog
 
+*  **Provider Cleanup**: Deleted XAI/Grok (and Gemini) as provider options in all modes (Algorithm Design, Brainstorming, Distillation). Now sticks purely to OpenRouter and LlamaCpp Server. Removed related code, UI elements, imports (langchain-google-genai, langchain-xai, xai-sdk). Updated requirements.txt so that `pip install -r requirements.txt` + `python app.py` works cleanly for the supported providers (verified in fresh venv).
 *  **App Title + Massive QNN Option**: Changed app title to "army of agents to think about your problem." In Brainstorming Mode, users now get an explicit choice: **Auto** (small recommended panel via complexity estimator, 2-5) **or Manual/Massive** where you directly specify any Layers × Width (e.g. 100×100) to spawn a giant QNN army at your request. Backend honors large values with no artificial cap (use responsibly).
 *  **Markdown Support**: Chat interfaces now support rich markdown rendering for better readability of code and formatted text.
 *  **Brainstorming Mode**: A specialized mode for exploring ideas and concepts. It utilizes the full QNN engine to dynamically generate a panel of expert personas (e.g., "Dr. Logic", "Creative Visionary") based on your prompt. These agents collaborate and reflect over multiple epochs, providing a depth of insight that a single prompt cannot match. Features a dedicated chat-like interface that displays expert reflections and a final synthesized answer directly in the chat.
 *  **Parallel QNN Topology**: Layer 0 agents now execute in parallel, correcting previous bottlenecks and ensuring a truly distributed initial analysis.
-*  **Gemini Backend Integration**: Added support for Google's Gemini 3 Flash Preview model as the backend for brainstorming mode. API key stored securely in localStorage.
+*  **Provider Simplification**: Removed Gemini and XAI/Grok providers. Now supports only OpenRouter (for cloud models) and LlamaCpp Server (local) for all modes (Algorithm, Brainstorming, Distillation). Dependencies cleaned accordingly.
 *  **Mode Switcher**: UI now features two distinct modes - "Algorithm Design Mode" (original QNN functionality) and "Brainstorming Mode" (dynamic QNN expert chat interface).
 *  **Mirror Descent**: Renamed the qualitative backpropagation mechanism to "Mirror Descent" to better reflect the reflective nature of the prompt update process.
 *  **Complexity-Based QNN Sizing (Auto mode)**: When using Auto in Brainstorming, mode automatically estimates problem complexity and determines the number of QNN agents (2-5) and epochs accordingly. Manual mode bypasses this for user-specified massive sizes.
@@ -162,7 +163,7 @@ The current focus is on polishing and debugging existing features to reach a bet
 
 ## Technical Setup
 
-*   **Backend**: FastAPI, LangChain, LangGraph, LlamaCpp (via server), OpenRouter
+*   **Backend**: FastAPI, LangChain, LangGraph, LlamaCpp (via server), OpenRouter (only supported providers)
 *   **Frontend**: HTML, CSS, JavaScript
 
 ### Installation and Execution
@@ -181,8 +182,8 @@ The current focus is on polishing and debugging existing features to reach a bet
     source venv/bin/activate
     ```
 3.  **Install dependencies:** `pip install -r requirements.txt`.
-4.  **Setup LLM Provider**:
-    *   **OpenRouter**: Sign up at [OpenRouter](https://openrouter.ai/) and get an API key. This is the easiest way to get started with powerful models like Claude 3.5 Sonnet or Gemini Pro.
+4.  **Setup LLM Provider** (only OpenRouter and LlamaCpp supported):
+    *   **OpenRouter**: Sign up at [OpenRouter](https://openrouter.ai/) and get an API key. This is the easiest way to get started with powerful models like Claude 3.5 Sonnet, etc.
     *   **LlamaCpp Server (Local)**:
         *   Install the server: `pip install llama-cpp-python[server]`
         *   Download a GGUF model (e.g., from HuggingFace).

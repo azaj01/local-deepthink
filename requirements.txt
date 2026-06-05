@@ -1,18 +1,37 @@
+# =============================================================================
+# local-deepthink / "army of agents..." dependencies
+# Providers supported: OpenRouter (cloud) and LlamaCpp Server (local only).
+# XAI/Grok and Gemini providers have been removed.
+#
+# Systematic audit:
+# - langchain-community still required only for FAISS (with deprecation note)
+# - All other langchain usage via split packages (langchain-core, -openai, etc.)
+# - Explicit: numpy, pydantic, openai (for local OpenAI-compatible embeddings/llamacpp)
+# - No more xai-sdk / langchain-xai / langchain-google-genai
+# =============================================================================
+
+# Web / server
 fastapi
-names
 uvicorn
 python-dotenv
 sse-starlette
-langchain
-langchain-xai
-langchain-openai
-langchain-community
-langchain-google-genai
-langchain-text-splitters
-langgraph
-scikit-learn
-faiss-cpu
-pymupdf>=1.24.0
 python-multipart
 aiohttp
+
+# LangChain ecosystem (split packages - preferred modern layout)
+langchain-core
+langchain-community  # required for FAISS vectorstore only; see deprecation comment in app.py around the import
+langchain-openai
+langchain-text-splitters
+langgraph
+
+# Vector store + ML (FAISS + KMeans in RAPTOR)
+faiss-cpu
+scikit-learn
+numpy
+
+# Document processing + misc
+pymupdf>=1.24.0
+names
 openai
+pydantic

@@ -595,25 +595,9 @@
             <label for="llm-provider">🤖 LLM Provider:</label>
             <select id="llm-provider"
                 style="padding: 0.5rem; border-radius: 4px; background: #1a1d24; color: #fff; border: 1px solid #333;">
-                <option value="gemini">Gemini (Cloud)</option>
-                <option value="grok">Grok (xAI)</option>
                 <option value="openrouter">OpenRouter</option>
                 <option value="llamacpp">LlamaCpp Server</option>
-
             </select>
-
-            <div id="gemini-config" style="display: flex; gap: 0.5rem; align-items: center;">
-                <label for="gemini-api-key">🔑 API Key:</label>
-                <input type="password" id="gemini-api-key" placeholder="Gemini API key..." style="min-width: 180px;">
-            </div>
-
-            <div id="grok-config" style="display: none; gap: 0.5rem; align-items: center;">
-                <label for="grok-api-key">🌌 API Key:</label>
-                <input type="password" id="grok-api-key" placeholder="Grok API key..." style="min-width: 180px;">
-                <label for="grok-openrouter-key">🔗 OR Key (Embeddings):</label>
-                <input type="password" id="grok-openrouter-key" placeholder="OpenRouter Key..."
-                    style="min-width: 180px;">
-            </div>
 
             <div id="openrouter-config" style="display: none; gap: 0.5rem; align-items: center;">
                 <label for="openrouter-api-key">🔗 API Key:</label>
@@ -1200,18 +1184,14 @@
                     return;
                 }
 
-                // Read global provider settings
+                // Read global provider settings (only openrouter / llamacpp)
                 const provider = document.getElementById('llm-provider').value;
-                const geminiKey = document.getElementById('gemini-api-key').value.trim();
-                const grokKey = document.getElementById('grok-api-key').value.trim();
                 const openrouterKey = document.getElementById('openrouter-api-key').value.trim();
                 const openrouterMdl = document.getElementById('openrouter-model').value.trim();
                 const llamacppServerUrl = document.getElementById('llamacpp-url').value.trim();
                 const llamacppApiKey = 'no-key-required';
 
                 let api_key = '';
-                if (provider === 'gemini') api_key = geminiKey;
-                if (provider === 'grok') api_key = grokKey;
                 if (provider === 'openrouter') api_key = openrouterKey;
 
                 const startBtn = document.getElementById('start-distillation-btn');
@@ -1472,22 +1452,17 @@
         const modeTabs = document.querySelectorAll('.mode-tab');
         const algorithmMode = document.getElementById('algorithm-mode');
         const brainstormMode = document.getElementById('brainstorm-mode');
-        const geminiApiKeyInput = document.getElementById('gemini-api-key');
         const saveApiKeyBtn = document.getElementById('save-api-key-btn');
         const apiKeyStatus = document.getElementById('api-key-status');
         // NodeChat replaces #brainstorm-chat, #brainstorm-form, and #brainstorm-input
         // Initialize after DOM references are set up (see below)
         const llmProviderSelect = document.getElementById('llm-provider');
-        const geminiConfig = document.getElementById('gemini-config');
-        const grokConfig = document.getElementById('grok-config');
         const openrouterConfig = document.getElementById('openrouter-config');
         const llamacppConfig = document.getElementById('llamacpp-config');
 
 
         // Load settings from localStorage on page load
-        const savedProvider = localStorage.getItem('llm_provider') || 'gemini';
-        const savedApiKey = localStorage.getItem('gemini_api_key');
-        const savedGrokApiKey = localStorage.getItem('grok_api_key');
+        const savedProvider = localStorage.getItem('llm_provider') || 'openrouter';
         const savedOpenrouterApiKey = localStorage.getItem('openrouter_api_key');
         const savedOpenrouterModel = localStorage.getItem('openrouter_model');
         const savedLlamacppUrl = localStorage.getItem('llamacpp_url');
@@ -1495,26 +1470,17 @@
 
 
         llmProviderSelect.value = savedProvider;
-        if (savedApiKey) geminiApiKeyInput.value = savedApiKey;
-        if (savedGrokApiKey) document.getElementById('grok-api-key').value = savedGrokApiKey;
-        if (localStorage.getItem('grok_openrouter_key')) document.getElementById('grok-openrouter-key').value = localStorage.getItem('grok_openrouter_key');
         if (savedOpenrouterApiKey) document.getElementById('openrouter-api-key').value = savedOpenrouterApiKey;
         if (savedOpenrouterModel) document.getElementById('openrouter-model').value = savedOpenrouterModel;
         if (savedLlamacppUrl) document.getElementById('llamacpp-url').value = savedLlamacppUrl;
         if (savedLlamacppEmbeddingUrl) document.getElementById('llamacpp-embedding-url').value = savedLlamacppEmbeddingUrl;
 
 
-        // Show/hide config based on provider
+        // Show/hide config based on provider (only openrouter / llamacpp)
         const updateProviderConfig = () => {
-            geminiConfig.style.display = 'none';
-            grokConfig.style.display = 'none';
             openrouterConfig.style.display = 'none';
             llamacppConfig.style.display = 'none';
-            if (llmProviderSelect.value === 'gemini') {
-                geminiConfig.style.display = 'flex';
-            } else if (llmProviderSelect.value === 'grok') {
-                grokConfig.style.display = 'flex';
-            } else if (llmProviderSelect.value === 'openrouter') {
+            if (llmProviderSelect.value === 'openrouter') {
                 openrouterConfig.style.display = 'flex';
             } else if (llmProviderSelect.value === 'llamacpp') {
                 llamacppConfig.style.display = 'flex';
@@ -1522,7 +1488,7 @@
         };
         updateProviderConfig();
 
-        if (savedApiKey) {
+        if (savedOpenrouterApiKey) {
             apiKeyStatus.textContent = '✓ Saved';
         }
 
@@ -1535,24 +1501,16 @@
         // Save all settings to localStorage
         saveApiKeyBtn.addEventListener('click', () => {
             const provider = llmProviderSelect.value;
-            const apiKey = geminiApiKeyInput.value.trim();
-            const grokApiKey = document.getElementById('grok-api-key').value.trim();
-            const grokOpenrouterKey = document.getElementById('grok-openrouter-key').value.trim();
             const openrouterApiKey = document.getElementById('openrouter-api-key').value.trim();
             const openrouterModel = document.getElementById('openrouter-model').value.trim();
             const llamacppUrl = document.getElementById('llamacpp-url').value.trim();
             const llamacppEmbeddingUrl = document.getElementById('llamacpp-embedding-url').value.trim();
 
-
             localStorage.setItem('llm_provider', provider);
-            if (apiKey) localStorage.setItem('gemini_api_key', apiKey);
-            if (grokApiKey) localStorage.setItem('grok_api_key', grokApiKey);
-            if (grokOpenrouterKey) localStorage.setItem('grok_openrouter_key', grokOpenrouterKey);
             if (openrouterApiKey) localStorage.setItem('openrouter_api_key', openrouterApiKey);
             if (openrouterModel) localStorage.setItem('openrouter_model', openrouterModel);
             if (llamacppUrl) localStorage.setItem('llamacpp_url', llamacppUrl);
             if (llamacppEmbeddingUrl) localStorage.setItem('llamacpp_embedding_url', llamacppEmbeddingUrl);
-
 
             apiKeyStatus.textContent = '✓ Saved';
             setTimeout(() => { apiKeyStatus.textContent = ''; }, 2000);
@@ -1593,9 +1551,7 @@
                 subtitle: 'Auto small panel or spawn a massive army of agents',
                 placeholder: 'What would you like to brainstorm?',
                 onSend: async (message, chat) => {
-                    const provider = localStorage.getItem('llm_provider') || 'gemini';
-                    const apiKey = localStorage.getItem('gemini_api_key');
-                    const grokApiKey = localStorage.getItem('grok_api_key');
+                    const provider = localStorage.getItem('llm_provider') || 'openrouter';
                     const openrouterApiKey = localStorage.getItem('openrouter_api_key');
                     const openrouterModel = localStorage.getItem('openrouter_model') || 'stepfun/step-3.5-flash:free';
                     const llamacppUrl = localStorage.getItem('llamacpp_url') || 'http://localhost:8080/v1';
@@ -1603,16 +1559,6 @@
                     const llamacppEmbeddingUrl = localStorage.getItem('llamacpp_embedding_url') || 'http://localhost:8080/v1';
 
 
-                    if (provider === 'gemini' && !apiKey) {
-                        alert('Please save your Gemini API key in the settings panel first.');
-                        chat.finishStreaming();
-                        return;
-                    }
-                    if (provider === 'grok' && !grokApiKey) {
-                        alert('Please save your Grok API key in the settings panel first.');
-                        chat.finishStreaming();
-                        return;
-                    }
                     if (provider === 'openrouter' && !openrouterApiKey) {
                         alert('Please save your OpenRouter API key in the settings panel first.');
                         chat.finishStreaming();
@@ -1631,9 +1577,7 @@
                     addLogMessage(`<strong>User:</strong> ${message}`, { isHTML: true, color: '#a0a0ff' });
 
                     // Determine the correct API key for the selected provider
-                    let selectedApiKey = apiKey;
-                    if (provider === 'grok') selectedApiKey = grokApiKey;
-                    if (provider === 'openrouter') selectedApiKey = openrouterApiKey;
+                    let selectedApiKey = openrouterApiKey;
 
                     const qnnModeRadio = document.querySelector('input[name="qnn_size_mode"]:checked');
                     const qnnMode = qnnModeRadio ? qnnModeRadio.value : 'auto';
@@ -1641,7 +1585,6 @@
                         prompt: message,
                         provider: provider,
                         api_key: selectedApiKey,
-                        grok_openrouter_key: document.getElementById('grok-openrouter-key').value.trim(),
 
                         openrouter_model: openrouterModel,
                         llamacpp_url: llamacppUrl,
@@ -1653,7 +1596,7 @@
                         learning_rate: 0.1,
                         num_epochs: parseInt(document.getElementById('brainstorm_epochs')?.value) || 2,
                         coder_debug_mode: document.getElementById('brainstorm_debug_mode').checked ? 'true' : 'false',
-                        // New: support for user-requested massive QNN in brainstorming
+                        // support for user-requested massive QNN in brainstorming
                         qnn_mode: qnnMode,
                         manual_layers: parseInt(document.getElementById('manual_layers')?.value) || 5,
                         manual_width: parseInt(document.getElementById('manual_width')?.value) || 5
@@ -1913,26 +1856,15 @@
                 return;
             }
 
-            // Include Global Provider Settings
+            // Include Global Provider Settings (only openrouter / llamacpp)
             const provider = document.getElementById('llm-provider').value;
-            const geminiKey = document.getElementById('gemini-api-key').value.trim();
-            const grokKey = document.getElementById('grok-api-key').value.trim();
-            const grokOpenrouterKey = document.getElementById('grok-openrouter-key').value.trim();
             const openrouterKey = document.getElementById('openrouter-api-key').value.trim();
             const openrouterMdl = document.getElementById('openrouter-model').value.trim();
             const llamacppServerUrl = document.getElementById('llamacpp-url').value.trim();
-            const llamacppApiKey = document.getElementById('llamacpp-api-key').value.trim();
+            const llamacppApiKey = 'no-key-required';
             const llamacppEmbUrl = document.getElementById('llamacpp-embedding-url').value.trim();
 
-
             params.provider = provider;
-            if (provider === 'gemini') params.api_key = geminiKey;
-
-            if (provider === 'grok') {
-                params.api_key = grokKey;
-                params.grok_openrouter_key = grokOpenrouterKey;
-            }
-
             if (provider === 'openrouter') params.api_key = openrouterKey;
 
             params.openrouter_model = openrouterMdl;

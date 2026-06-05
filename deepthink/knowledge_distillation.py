@@ -15,6 +15,9 @@ from deepthink.chains import (
     get_followup_question_chain,
     DISTILLATION_ARCHETYPES
 )
+# PerplexityChain lives in its own module (used only by distillation mode for LLM-based quality scoring).
+# We import it here so the _compute_perplexity method can actually find the name.
+from deepthink.chains.perplexity_chain import PerplexityChain
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

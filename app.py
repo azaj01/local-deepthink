@@ -27,17 +27,18 @@ from langchain_core.retrievers import BaseRetriever
 from typing import Dict, Any, TypedDict, Annotated, Tuple
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+# langchain_community is deprecated / being sunset (see warning on import).
+# We still depend on it for the FAISS vectorstore integration (widely used pattern).
+# Migration path: https://github.com/langchain-ai/langchain-community/issues/674
+# For now we keep it; if FAISS support moves to langchain-faiss we can switch later.
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_core.messages import SystemMessage, HumanMessage
 from sklearn.cluster import KMeans
 from contextlib import redirect_stdout
 from fastapi.staticfiles import StaticFiles
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_xai import ChatXAI
-from langchain.embeddings.base import Embeddings
-from xai_sdk import Client as XAIClient
+from langchain_core.embeddings import Embeddings
 from deepthink.models import ChatLlamaCpp
 import fitz  # PyMuPDF for PDF text extraction
 from deepthink.chains import (
@@ -118,9 +119,8 @@ class TokenUsageTracker(AsyncCallbackHandler):
 
 
 load_dotenv()
-# Note: google-generativeai may need to be installed: pip install google-generativeai
-# Configure Gemini API key from environment or UI
-# os.environ["GOOGLE_API_KEY"] = ...
+# Only OpenRouter and LlamaCpp server providers are supported.
+# API keys are provided via the UI (stored in browser localStorage) or params.
 
 app = FastAPI(title="army of agents to think about your problem.")
 app.mount("/js", StaticFiles(directory="js"), name="js")
@@ -147,30 +147,6 @@ sessions = {}
 final_reports = {}
 
 # --- Custom Embedding Classes ---
-
-
-class GrokEmbeddings(Embeddings):
-    def __init__(self, api_key, model="grok-embedding-small"):
-        self.client = XAIClient(api_key=api_key)
-        self.model = model
-
-    def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        # Batch embedding logic
-        try:
-            response = self.client.embeddings.create(model=self.model, input=texts)
-            return [item.embedding for item in response.data]
-        except Exception as e:
-            print(f"Error generating Grok embeddings: {e}")
-            return []
-
-    def embed_query(self, text: str) -> list[float]:
-        # Single embedding logic
-        try:
-            response = self.client.embeddings.create(model=self.model, input=text)
-            return response.data[0].embedding
-        except Exception as e:
-            print(f"Error generating Grok query embedding: {e}")
-            return []
 
 
 active_distillation_graph = None
@@ -2334,67 +2310,11 @@ async def build_and_run_graph(payload: dict = Body(...)):
     token_tracker = TokenUsageTracker(log_stream)
 
     try:
-        # Determine Provider
-        provider = params.get("provider", "gemini")
+        # Determine Provider - only OpenRouter and LlamaCpp supported
+        provider = params.get("provider", "openrouter")
         api_key = params.get("api_key", "")
 
-        if provider == "gemini":
-            if not api_key:
-                return JSONResponse(
-                    content={"message": "Gemini API Key required"}, status_code=400
-                )
-            llm = ChatGoogleGenerativeAI(
-                model="gemini-3-flash-preview",
-                google_api_key=api_key,
-                temperature=0.7,
-                callbacks=[token_tracker],
-            )
-            summarizer_llm = llm  # Reuse for summary
-            embeddings_model = GoogleGenerativeAIEmbeddings(
-                model="models/embedding-001", google_api_key=api_key
-            )
-            await log_stream.put(
-                f"--- Initializing Main Agent LLM: Gemini (gemini-3-flash-preview) & Embeddings ---"
-            )
-
-        elif provider == "grok":
-            if not api_key:
-                return JSONResponse(
-                    content={"message": "Grok API Key required"}, status_code=400
-                )
-            llm = ChatXAI(
-                model="grok-4-1-fast",
-                xai_api_key=api_key,
-                temperature=0.7,
-                callbacks=[token_tracker],
-            )
-            summarizer_llm = llm
-
-            # Use OpenRouter for Embeddings (as Grok lacks native support)
-            grok_openrouter_key = params.get("grok_openrouter_key")
-            if not grok_openrouter_key:
-                await log_stream.put(
-                    f"WARNING: No OpenRouter Key provided for Grok embeddings. RAG will be disabled."
-                )
-                embeddings_model = None
-            else:
-                try:
-                    embeddings_model = OpenAIEmbeddings(
-                        model="google/gemini-embedding-001",
-                        openai_api_key=grok_openrouter_key,
-                        openai_api_base="https://openrouter.ai/api/v1",
-                        check_embedding_ctx_length=False,
-                    )
-                    await log_stream.put(
-                        f"--- Initializing Main Agent LLM: Grok & Embeddings (via OpenRouter) ---"
-                    )
-                except Exception as e:
-                    embeddings_model = None
-                    await log_stream.put(
-                        f"WARNING: Failed to initialize Grok (OpenRouter) embeddings: {e}"
-                    )
-
-        elif provider == "openrouter":
+        if provider == "openrouter":
             if not api_key:
                 return JSONResponse(
                     content={"message": "OpenRouter API Key required"}, status_code=400
@@ -2410,7 +2330,7 @@ async def build_and_run_graph(payload: dict = Body(...)):
                 callbacks=[token_tracker],
             )
             summarizer_llm = llm
-            # Use OpenAIEmbeddings with OpenRouter base URL
+            # Use OpenAIEmbeddings with OpenRouter base URL (works for many OpenRouter embedding models)
             try:
                 embeddings_model = OpenAIEmbeddings(
                     model="google/gemini-embedding-001",
@@ -2444,7 +2364,7 @@ async def build_and_run_graph(payload: dict = Body(...)):
                 max_tokens=4096,
             )
             summarizer_llm = llm
-            # Use OpenAIEmbeddings pointing to local server
+            # Use OpenAIEmbeddings pointing to local server (assumes embedding capable server)
             llamacpp_emb_url = params.get(
                 "llamacpp_embedding_url", "http://localhost:8080/v1"
             )
@@ -2472,7 +2392,7 @@ async def build_and_run_graph(payload: dict = Body(...)):
         else:
             return JSONResponse(
                 content={
-                    "message": "Invalid provider. Please select gemini, grok, openrouter, or llamacpp."
+                    "message": "Invalid provider. Please select openrouter or llamacpp."
                 },
                 status_code=400,
             )
@@ -3440,7 +3360,7 @@ async def start_distillation(payload: dict = Body(...)):
         anchors = anchors_payload
 
     debug_mode = payload.get("debug_mode", False)
-    provider = payload.get("provider", "gemini")
+    provider = payload.get("provider", "openrouter")
     api_key = payload.get("api_key", "")
 
     await log_stream.put(
@@ -3454,27 +3374,7 @@ async def start_distillation(payload: dict = Body(...)):
                 "--- ⚗️ Distillation Debug Mode: using DistillationMockLLM ---"
             )
         else:
-            if provider == "gemini":
-                if not api_key:
-                    return JSONResponse(
-                        content={"message": "Gemini API Key required"}, status_code=400
-                    )
-                llm = ChatGoogleGenerativeAI(
-                    model="gemini-3-flash-preview",
-                    google_api_key=api_key,
-                    temperature=0.7,
-                )
-                await log_stream.put("--- Distillation LLM: Gemini ---")
-            elif provider == "grok":
-                if not api_key:
-                    return JSONResponse(
-                        content={"message": "Grok API Key required"}, status_code=400
-                    )
-                llm = ChatXAI(
-                    model="grok-4-1-fast", xai_api_key=api_key, temperature=0.7
-                )
-                await log_stream.put("--- Distillation LLM: Grok ---")
-            elif provider == "openrouter":
+            if provider == "openrouter":
                 if not api_key:
                     return JSONResponse(
                         content={"message": "OpenRouter API Key required"},
@@ -3507,13 +3407,10 @@ async def start_distillation(payload: dict = Body(...)):
                 await log_stream.put(
                     f"--- Distillation LLM: LlamaCpp ({llamacpp_url}) ---"
                 )
-                await log_stream.put(
-                    f"--- Distillation LLM: LlamaCpp ({llamacpp_url}) ---"
-                )
             else:
                 return JSONResponse(
                     content={
-                        "message": "Invalid provider. Please select gemini, grok, openrouter, or llamacpp."
+                        "message": "Invalid provider. Please select openrouter or llamacpp."
                     },
                     status_code=400,
                 )
