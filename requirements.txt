@@ -1,5 +1,5 @@
 # =============================================================================
-# local-deepthink / "army of agents..." dependencies
+# open-deepthink / "army of agents..." dependencies
 # Providers supported: OpenRouter (cloud) and LlamaCpp Server (local only).
 # XAI/Grok and Gemini providers have been removed.
 #

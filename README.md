@@ -1,11 +1,11 @@
-<img width="1248" height="832" alt="local-deepthink QNN visualization" src="https://github.com/user-attachments/assets/ffd223ee-a875-4213-a65f-23c2f7a7807c" />
+<img width="1248" height="832" alt="open-deepthink QNN visualization" src="https://github.com/user-attachments/assets/ffd223ee-a875-4213-a65f-23c2f7a7807c" />
 
-# local-deepthink: Evolvable Agent Networks for Deep, Structured Reasoning
+# open-deepthink: Evolvable Agent Networks for Deep, Structured Reasoning
 
 **Not another flat panel of 16 agents brainstorming once.**  
 A **Qualitative Neural Network (QNN)** that runs layered forward passes, reflects on its own performance, mutates its agents' cognitive identities, raises the difficulty of the problem, and records the entire developmental history as high-signal training data.
 
-Most agentic systems give you breadth through parallelism. local-deepthink gives you **depth through structured iteration and self-modification**.
+Most agentic systems give you breadth through parallelism. open-deepthink gives you **depth through structured iteration and self-modification**.
 
 ---
 
@@ -20,7 +20,7 @@ Typical multi-agent setups (including many "16 expert" or "army of agents" brain
 
 You get diversity of perspective, but the agents themselves do not become meaningfully better at the *specific* problem over time. There is no topology, no persistent specialization, no mechanism that rewires *how* the system thinks, and almost never a reusable artifact of the reasoning process.
 
-local-deepthink treats agents like **neurons in a network** whose "weights" are rich natural-language personas, and whose learning rule is **Mirror Descent** (qualitative backpropagation).
+open-deepthink treats agents like **neurons in a network** whose "weights" are rich natural-language personas, and whose learning rule is **Mirror Descent** (qualitative backpropagation).
 
 ---
 
@@ -93,7 +93,7 @@ This is the mode for when you want to treat the QNN as a trainable, reusable rea
 
 ## The Outputs That Actually Matter
 
-A single deep local-deepthink run produces far more than an answer:
+A single deep open-deepthink run produces far more than an answer:
 
 - **Evolved QNN artifacts** — Portable, versionable "trained" multi-agent systems you can share and reuse.
 - **Full evolutionary traces** — Every prompt before/after Mirror Descent, every difficulty classification, every child/parent relationship, every reframed problem.
@@ -107,8 +107,8 @@ These artifacts are the real product. The final synthesized answer is a byproduc
 
 ## Why This Matters for Agentic Coding and Reasoning Research
 
-- **Test-time compute, done right and observably.** Many frontier systems hide their long reasoning inside a single model. local-deepthink makes the structure, specialization, and adaptation explicit and archivable.
-- **A credible path to better base models.** The highest-leverage use of current powerful models may be generating traces of *how* hard problems should be decomposed, attacked by specialized perspectives, critiqued, and progressively deepened. local-deepthink is purpose-built to produce that class of data at scale on consumer hardware.
+- **Test-time compute, done right and observably.** Many frontier systems hide their long reasoning inside a single model. open-deepthink makes the structure, specialization, and adaptation explicit and archivable.
+- **A credible path to better base models.** The highest-leverage use of current powerful models may be generating traces of *how* hard problems should be decomposed, attacked by specialized perspectives, critiqued, and progressively deepened. open-deepthink is purpose-built to produce that class of data at scale on consumer hardware.
 - **Reusable specialized reasoners.** An exported QNN that has spent 10–20 epochs evolving on a domain is qualitatively different from prompting a base model with a long system prompt. The specialization is *baked into the network structure and the evolved personas*.
 - **Local and long-horizon by design.** Runs for hours or days on a 32 GB laptop or a modest rig. No requirement for frontier API spend to get compounding returns.
 
@@ -128,8 +128,8 @@ These artifacts are the real product. The final synthesized answer is a byproduc
 ## Quick Start
 
 ```bash
-git clone https://github.com/iblameandrew/local-deepthink
-cd local-deepthink
+git clone https://github.com/iblameandrew/open-deepthink
+cd open-deepthink
 python -m venv venv
 .\venv\Scripts\activate          # Windows
 # source venv/bin/activate       # macOS/Linux
@@ -161,7 +161,7 @@ See the in-app UI for the three modes, topology visualization, token budgeting (
 
 ## Vision
 
-Every serious local-deepthink run is a small laboratory experiment in collective intelligence. The structured traces it produces — complete with evolutionary dynamics, difficulty signals, and topology mutations — are some of the richest open data currently being generated about *how* LLMs can be orchestrated to think harder.
+Every serious open-deepthink run is a small laboratory experiment in collective intelligence. The structured traces it produces — complete with evolutionary dynamics, difficulty signals, and topology mutations — are some of the richest open data currently being generated about *how* LLMs can be orchestrated to think harder.
 
 The long-term bet is that collecting thousands of such runs will let us train models that no longer need elaborate hand-written system prompts or external scaffolding, because they have internalized the patterns of decomposition, specialization, critique, and progressive deepening directly.
 
@@ -186,11 +186,11 @@ Open an issue with your traces and thoughts.
 
 Open-source research project. The goal is to push forward what small teams and individuals can do with structured, long-horizon agentic systems.
 
-If local-deepthink helps you go deeper on hard problems or generates useful traces, star the repo and share what you built with the exported QNNs or distillation data.
+If open-deepthink helps you go deeper on hard problems or generates useful traces, star the repo and share what you built with the exported QNNs or distillation data.
 
 ---
 
-**local-deepthink** — Turn time and structure into depth.  
+**open-deepthink** — Turn time and structure into depth.  
 Not more agents. Better *becoming* agents.
 
 ---

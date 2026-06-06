@@ -285,7 +285,7 @@ def r12():
     assert os.path.exists(r"C:\Users\def78\smenos\local-deepthink\pyproject.toml")
     with open(r"C:\Users\def78\smenos\local-deepthink\pyproject.toml") as f:
         text = f.read()
-    assert "local-deepthink" in text
+    assert "open-deepthink" in text
     assert "grandalf" in text
 
 

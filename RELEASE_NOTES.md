@@ -154,4 +154,4 @@ This release exists because we did the boring work: enumerate every
 feature, write a test for it, fix what broke, and pin it. The codebase
 is now measurably more robust than it was a week ago.
 
-— *the local-deepthink maintainers*
+— *the open-deepthink maintainers*

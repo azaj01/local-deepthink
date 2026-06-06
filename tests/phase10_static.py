@@ -129,7 +129,7 @@ def t6():
         text = f.read()
     # Should have a title and key UI elements
     assert "<title>" in text
-    assert "local-deepthink" in text or "NOA" in text or "army" in text.lower()
+    assert "open-deepthink" in text or "local-deepthink" in text or "NOA" in text or "army" in text.lower()
 
 
 chk("index.html has expected structure", t6)
