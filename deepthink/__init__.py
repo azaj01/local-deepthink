@@ -1,6 +1,6 @@
-__version__ = "0.0.3-beta"
-__release_name__ = "army-of-agents"
-__release_tag__ = "beta-0.0.3"
+__version__ = "0.1.0"
+__release_name__ = "out-of-beta"
+__release_tag__ = "0.1.0"
 
 # deepthink package initialization
 from .utils import clean_and_parse_json, execute_code_in_sandbox

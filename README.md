@@ -117,7 +117,7 @@ These artifacts are the real product. The final synthesized answer is a byproduc
 ## Technical Strengths
 
 - Built on **LangGraph** with real cyclic graphs, conditional routing (epoch gateway), parallel layer execution, and proper state management — not a pile of sequential chains.
-- 195 passing tests across 11 phases, including regression tests for every bug fixed in the beta-0.0.3 quality release.
+- 195 passing tests across 11 phases, including regression tests for every bug fixed in the 0.0.3 quality release.
 - Clean provider model: only OpenRouter (cloud) and llama.cpp server (local). Per-agent and per-synthesis model selection supported.
 - Robust JSON handling, token tracking, streaming logs, RAPTOR hierarchical indexing, and safe(ish) code execution.
 - Real export/import of full QNN state.
@@ -169,9 +169,33 @@ This is why the distillation dataset + full topology archives are treated as fir
 
 ---
 
+## Future Directions: QNNs in Practical Coding Agents
+
+As a programmer, one of the most exciting follow-up projects I can imagine is taking the core ideas from open-deepthink and embedding them into a real, tool-using coding agent.
+
+Here's the kind of workflow I'm thinking about:
+
+You're deep in a codebase, "vibe coding" some rough, high-level instructions because you don't have perfect nuance on the solution yet. You hit a particularly sticky bug or architectural problem — the kind where normal agent assistance (even strong models) keeps circling around variations of the same local approach.
+
+Instead of grinding it out with more prompting, you type something like:
+
+```
+/qnn explore this deadlock / performance regression
+```
+
+The system spans a large structured network — for example a 10×10 QNN with 100 agents — and runs multiple epochs of thinking. These agents don't just brainstorm in a flat chat. They perform layered forward passes, decompose the problem across the topology, explore genuinely different strategies in parallel and in depth, evolve their own specializations through Mirror Descent, and deliberately reframe the problem to help escape the current mental model.
+
+The goal isn't for the QNN to immediately write the fix. The output is a rich map of divergent approaches, with reasoning about why certain paths might break the current impasse. You review the explored solution space, pick the directions that feel promising (or that surface angles you never would have considered), and feed the best ones back into the tight, grounded edit-run-debug loop of your normal coding agent.
+
+This hybrid model — using large-scale evolutionary QNN exploration as a "strategic depth tool" precisely when you're stuck and lacking nuance, while keeping a fast, tool-heavy agent for actual implementation and verification — feels like a natural and powerful evolution of the ideas here.
+
+I plan to explore building something like this in a dedicated coding agent project in the future.
+
+---
+
 ## Contributing & Benchmarking
 
-This is research software that has reached a solid beta (195/195 tests, all core loops functional). The most valuable contributions right now are:
+This is research software with a stable core (195/195 tests, all core loops functional). The most valuable contributions right now are:
 
 - Deep, long runs on interesting problems (especially with local models) and sharing the exported QNNs + distillation datasets.
 - Bug reports that include the graph trace / logs.
@@ -195,4 +219,4 @@ Not more agents. Better *becoming* agents.
 
 ---
 
-*Beta 0.0.3 quality release. See [RELEASE_NOTES.md](./RELEASE_NOTES.md) for the full test and bug-fix history.*
+*Version 0.1.0 — Official release out of beta. See [RELEASE_NOTES.md](./RELEASE_NOTES.md) for the full history.*

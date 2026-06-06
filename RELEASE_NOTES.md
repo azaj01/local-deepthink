@@ -1,3 +1,15 @@
+# Release Notes — `0.1.0`
+
+**Tag:** `0.1.0`
+**Date:** 2026-06-06
+**Tagline:** "Official release out of beta"
+
+This marks the first official non-beta release of open-deepthink. The core QNN engine, Mirror Descent loops, three operating modes, export/import, and full test suite are considered stable.
+
+See the new "Future Directions" section in the README for thoughts on integrating QNN-style evolutionary exploration into practical coding agent workflows (e.g. a `/qnn` command for large-scale structured brainstorming on sticky problems).
+
+---
+
 # Release Notes — `beta-0.0.3`
 
 **Tag:** `beta-0.0.3`
