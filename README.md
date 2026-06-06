@@ -1,219 +1,198 @@
-<img width="1248" height="832" alt="image" src="https://github.com/user-attachments/assets/ffd223ee-a875-4213-a65f-23c2f7a7807c" />
+<img width="1248" height="832" alt="local-deepthink QNN visualization" src="https://github.com/user-attachments/assets/ffd223ee-a875-4213-a65f-23c2f7a7807c" />
 
+# local-deepthink: Evolvable Agent Networks for Deep, Structured Reasoning
 
-# local-deepthink: Democratizing Deep Algorithmic Thought 🧠
+**Not another flat panel of 16 agents brainstorming once.**  
+A **Qualitative Neural Network (QNN)** that runs layered forward passes, reflects on its own performance, mutates its agents' cognitive identities, raises the difficulty of the problem, and records the entire developmental history as high-signal training data.
 
-I've been thinking a lot about how we, as people, develop complex ideas and algorithms. It's rarely a single, brilliant flash of insight. Our minds are shaped by the countless small interactions we have—a conversation here, an article there. This environment of constant, varied input seems just as important as the act of thinking itself.
+Most agentic systems give you breadth through parallelism. local-deepthink gives you **depth through structured iteration and self-modification**.
 
-I wanted to see if I could recreate a small-scale version of that "soup" required for true algorithmic insight for local LLMs. The result is this project, **local-deepthink**. It's a system that runs a novel conceptual algorithm called a **Qualitative Neural Network (QNN)**. In a QNN, different AI agents are treated like "neurons" that collaborate and critique each other to refine complex solutions, effectively trading slower response times for higher quality and more robust outputs.
+---
 
-## 🚀 Beta Software 🚀
-local-deepthink has moved to the **Beta** stage! While much more stable, it is still research software. You may encounter bugs, but the core loops (Algorithm Design, Brainstorming, Distillation) are functional.
+## The Core Problem with "Just Add More Agents"
 
-Your feedback is invaluable. If you run into a crash or have ideas, please **open an issue** on our GitHub repository with your graph monitor trace log.
+Typical multi-agent setups (including many "16 expert" or "army of agents" brainstorming interfaces) work like this:
 
+- Spawn N agents with static or lightly templated personas.
+- Run them in parallel or loose conversation.
+- Synthesize once (or a few turns).
+- Done.
 
-## **Is true "deep thinking" only for trillion-dollar companies?**
+You get diversity of perspective, but the agents themselves do not become meaningfully better at the *specific* problem over time. There is no topology, no persistent specialization, no mechanism that rewires *how* the system thinks, and almost never a reusable artifact of the reasoning process.
 
-**local-deepthink** is a research platform that challenges the paradigm of centralized, proprietary AI. While systems like Google's DeepMind offer powerful reasoning by giving their massive models more "thinking time" in a closed environment (for a high price), local-deepthink explores a different path: **emergent intelligence on affordable local hardware**. We simulate a society of AI agents that collaborate, evolve, and deepen their understanding of a complex problem collectively over time.
+local-deepthink treats agents like **neurons in a network** whose "weights" are rich natural-language personas, and whose learning rule is **Mirror Descent** (qualitative backpropagation).
 
-Essentially, you can think of this project as a way to **max out a model's performance on complex algorithmic tasks by trading response time for quality**. The best part is that you don't need a supercomputer. local-deepthink is designed to turn even a modest 32gb RAM CPU-only laptop into a powerful "thought mining" rig. 💻⛏️ By leveraging efficient local models, you can leave the network running for hours or even days, allowing it to "mine" a sophisticated solution to a hard algorithmic problem. It's a fundamental shift: trading brute-force, instantaneous computation for the power of time, iteration, and distributed collaboration.
+---
 
-## Key Features: Two Distinct Modes
+## What Makes a QNN Different
 
-**local-deepthink** now offers two powerful ways to interact with the QNN engine:
+A QNN is a directed, layered graph of LLM agents with three repeating phases per epoch:
 
-### 1. 🧬 Algorithm Design Mode
-The original QNN functionality. Ideal for users who want to:
-*   Build custom agent architectures.
-*   Fine-tune hyperparameters (learning rate, density, etc.).
-*   Run deep, multi-epoch simulations for code generation or complex problem-solving.
-*   Export and import trained QNN states.
+1. **Forward Pass** — Problem is decomposed across the topology. Layer 0 runs in parallel. Each subsequent layer receives context from the previous layer and builds deeper analysis. Information flows structurally, not just through a shared chat.
 
-### 2. 🧠 Brainstorming Mode (New!)
-A streamlined, chat-based interface designed for deep concept exploration and ideation.
-*   **Dynamic Expert Panel (or Massive!)**: By default uses Auto mode (small panel via complexity estimation). Or choose **Manual / Massive** to spawn a huge QNN (any number of layers × width agents) at your explicit request for "army of agents" scale thinking.
-*   **Collaborative Reflection**: These experts debate, critique, and refine ideas over multiple epochs (cycles of thought).
-*   **Synthesis**: The final output is a comprehensive, synthesized answer that represents the collective intelligence of the agent panel.
-*   **Chat Interface**: Interact with the collective mind in a natural, chat-like environment.
+2. **Reflection + Mirror Descent** — After synthesis, the system does not just "critique the answer." It:
+   - Evaluates which agents struggled vs. succeeded on their specific sub-problems.
+   - Extracts attributes and "hard requests" from current personas.
+   - Uses a dense-spanner mechanism (or explicit mixing in Distillation) to **rewrite the system prompts, attributes, and skills** of agents for the next round.
+   - In Knowledge Distillation mode, literally **spawns evolved child agents** that inherit context memory and replace struggling parents in the live topology.
 
-### 3. ⚗️ Knowledge Distillation Mode (New!)
-A graph of 12 specialized agents mines and exhausts all possible knowledge from a set of topics — producing a structured QA dataset.
+3. **Problem Reframing** — A dedicated re-framer node looks at the current solution and formulates a *harder, more advanced version* of the problem. The network is then forced to solve the harder problem in the next epoch with its newly evolved agents.
 
-**How It Works:**
+This loop (decompose → structured forward → synthesize → reframe the goal → mutate the thinkers) is repeated for as many epochs as you allocate. The result is compounding depth rather than repeated breadth.
 
-1.  **Input**: The user provides a list of topics, an **anchor question** (the grand objective), and a **token budget** (how much computation to spend).
+---
 
-2.  **Topology**: 12 agents are spawned in a QNN with structure **1×2×2×2×2×2×1** (7 layers, no synthesis or activation nodes). Each agent has a unique personality archetype — The Initiator, The Builder, The Connector, The Preserver, The Performer, The Analyst, The Diplomat, The Transformer, The Explorer, The Architect, The Visionary, and The Dreamer — each with distinct cognitive attributes and skills.
+## Three Powerful Operating Modes
 
-3.  **Task Master**: On each epoch, the Task Master analyzes the topics and decomposes the anchor question into 12 distinct sub-questions, each assigned to an agent based on cognitive fit.
+### 1. ⚗️ Knowledge Distillation Mode (The Data Engine)
 
-4.  **Feed-Forward Pass**: The anchor question is fed through the topology. Each agent processes its sub-question within the context of the global anchor as the "grand objective." Agent outputs from one layer feed into the next as context, building a chain of increasingly refined analysis.
+The most distinctive and high-leverage mode.
 
-5.  **Mirror Descent**: After the forward pass, a Mirror Descent agent evaluates each question-agent pair. Based on the agent's attributes and the quality of its answer, each question is classified as **Easy** or **Hard** for that agent:
-    *   **Easy**: The agent retains its identity and will receive a new question next epoch.
-    *   **Hard**: The Mirror Descent agent searches the *current grid* for the agent with the most resonance to help. A **Mixing Agent** then spawns a new "child" agent by combining the attributes of both "parent" agents. The struggling agent is replaced by this child, which inherits its parent's **context memory** (capped at 100k tokens). The child keeps the same hard question for the next epoch.
+- Fixed powerful topology: **1×2×2×2×2×2×1** (7 layers, 12 agents).
+- 12 distinct cognitive archetypes (The Initiator, Builder, Connector, Preserver, Performer, Analyst, Diplomat, Transformer, Explorer, Architect, Visionary, Dreamer) with hand-crafted system prompts, attributes, and skills.
+- **Task Master** decomposes the anchor question into 12 Socratically-linked sub-questions.
+- Full forward pass with layer-to-layer context.
+- **Mirror Descent** evaluates every agent-question pair. Hard agents trigger **live evolutionary replacement**: a Mixing Agent combines the struggling agent with the best resonant helper from the *current* grid. The child inherits the parent's 100k-token context memory and keeps the difficult question.
+- **Seed Creator** evolves the topic set itself each epoch, generating ontologically adjacent new topics.
+- Runs until your token budget is exhausted.
 
-6.  **Seed Creator**: After each epoch, a Seed Creator agent analyzes the collective answers and the current topics, then generates 12 ontologically close new topics that guide the next round of inquiry. A followup chain then generates new questions for agents that had an "easy" time.
+**Primary output**: A structured JSON dataset of every (epoch, agent, archetype, question, answer) pair, plus a complete `topology_archive.json` containing the full evolutionary history (every system prompt mutation, every inheritance, every difficulty judgment).
 
-7.  **Evolution Loop**: The cycle of forward propagation and mirror descent continues indefinitely until the user's token budget is exhausted. The system tracks all input and output tokens across every chain call.
+This is not generic chat logs. This is **developmental trace data** explicitly designed for training the next generation of reasoning models — models that can internalize patterns of collaboration, critique, specialization, and progressive deepening.
 
-8.  **Output**: The main product is a **JSON dataset** of every sub-question-answer pair that each agent produces, updated in real-time. All topologies with their system prompts, contexts, and sub-questions are archived. When the budget is exhausted, a download becomes available.
+### 2. 🧠 Brainstorming Mode (Deep Conceptual Exploration)
 
-**UI Features:**
-*   **ASCII Topology Panel**: Live visualization of the 1×2×2×2×2×2×1 graph structure showing each agent's archetype, difficulty status, and inheritance.
-*   **Distillation Console**: Real-time streaming log of all distillation activity.
-*   **Token Progress Bar**: Visual tracker of token usage vs. budget with epoch and QA pair counters.
-*   **Perplexity Tracker**: A diversity metric showing the ratio of "Hard" vs "Easy" agents — higher values indicate more exploration, lower values indicate convergence.
-*   **Download**: Export the complete distilled dataset including topology archive.
+A chat-first interface over the full QNN engine.
 
-## Use Case: Advanced Algorithm Generation
-The **Qualitative Neural Network (QNN)** algorithm that powers this system is great for complex problems where the only clue you have is a vague question or a high-level conceptual goal. With the system now refocused exclusively on code and algorithm generation, its primary use case is to tackle difficult programming challenges.
+- **Auto mode**: Complexity estimator recommends a small, efficient panel (typically 2–5 agents, 1–3 epochs).
+- **Manual / Massive mode**: You directly specify Layers × Width (e.g. 8×12, 20×20, or larger). No artificial caps. Spawn a genuine "army" when the problem justifies it.
+- Agents are dynamically generated expert personas (not generic "helpful assistant" variants).
+- Full multi-epoch Mirror Descent evolution of the expert panel.
+- Final synthesis represents the *evolved collective intelligence*, not a single round of debate.
+- Rich markdown chat interface for inspecting intermediate reflections.
 
-## Changelog
+Use this when you want deeper insight than a single model or a flat expert panel can deliver, without manually designing a full algorithm topology.
 
-*  **`beta-0.0.3` — Quality release** ([RELEASE_NOTES.md](./RELEASE_NOTES.md)):
-   11 bugs fixed end-to-end (critical: distillation mock LLM, CoderMockLLM
-   decomposition count, missing `grandalf` dep, brainstorm-synthesis
-   empty-input crash). 195/195 tests pass across an 11-phase test suite.
-   Added `__version__` metadata, `pyproject.toml`, regression tests for
-   every bug fixed.
-*  **Provider Cleanup**: Deleted XAI/Grok (and Gemini) as provider options in all modes (Algorithm Design, Brainstorming, Distillation). Now sticks purely to OpenRouter and LlamaCpp Server. Removed related code, UI elements, imports (langchain-google-genai, langchain-xai, xai-sdk). Updated requirements.txt so that `pip install -r requirements.txt` + `python app.py` works cleanly for the supported providers (verified in fresh venv).
-*  **Per-Model Control**: Users can now specify a separate model for the Synthesis step, and a comma-separated list of models for per-agent use (cycles through the list across the QNN agents/layers). Works for both OpenRouter (different models via same key) and LlamaCpp (if server accepts model param). Applies to Algorithm and Brainstorming QNNs (and influences Distillation model choice). UI fields added to settings panel, passed through all modes.
-*  **App Title + Massive QNN Option**: Changed app title to "army of agents to think about your problem." In Brainstorming Mode, users now get an explicit choice: **Auto** (small recommended panel via complexity estimator, 2-5) **or Manual/Massive** where you directly specify any Layers × Width (e.g. 100×100) to spawn a giant QNN army at your request. Backend honors large values with no artificial cap (use responsibly).
-*  **Markdown Support**: Chat interfaces now support rich markdown rendering for better readability of code and formatted text.
-*  **Brainstorming Mode**: A specialized mode for exploring ideas and concepts. It utilizes the full QNN engine to dynamically generate a panel of expert personas (e.g., "Dr. Logic", "Creative Visionary") based on your prompt. These agents collaborate and reflect over multiple epochs, providing a depth of insight that a single prompt cannot match. Features a dedicated chat-like interface that displays expert reflections and a final synthesized answer directly in the chat.
-*  **Parallel QNN Topology**: Layer 0 agents now execute in parallel, correcting previous bottlenecks and ensuring a truly distributed initial analysis.
-*  **Provider Simplification**: Removed Gemini and XAI/Grok providers. Now supports only OpenRouter (for cloud models) and LlamaCpp Server (local) for all modes (Algorithm, Brainstorming, Distillation). Dependencies cleaned accordingly.
-*  **Mode Switcher**: UI now features two distinct modes - "Algorithm Design Mode" (original QNN functionality) and "Brainstorming Mode" (dynamic QNN expert chat interface).
-*  **Mirror Descent**: Renamed the qualitative backpropagation mechanism to "Mirror Descent" to better reflect the reflective nature of the prompt update process.
-*  **Complexity-Based QNN Sizing (Auto mode)**: When using Auto in Brainstorming, mode automatically estimates problem complexity and determines the number of QNN agents (2-5) and epochs accordingly. Manual mode bypasses this for user-specified massive sizes.
-*  **Hidden-layer-fixed**: Issue with meta-prompting in the hidden layer fixed. Agents are now moderately divergent from a strict skill alignment, as originally intended. Specialization is one thing; the individual that serves as recipient for the toolset is another. Keeping both distinct is important to make answers smoother.
-*   **QNN Export/Import:** You can now export the entire state of a trained agent network (QNN) to a JSON file. This QNN can be imported and used for inference on new problems without rerunning the entire epoch process.
-*   **Code Generation & Sandbox:** The system can now generate, synthesize, and safely execute Python code. A new `code_execution` node validates the final code, and successful modules provide context for future epochs.
-*   **Dynamic Problem Re-framing:** The network can now assess its own progress. After each cycle (epoch), it formulates a new, more advanced problem that builds upon its previous solution, forcing the agents to continuously deepen their understanding.
-*   **Divide and Conquer - Automatic Problem Decomposition:** local-deepthink now starts by breaking down the user's initial problem into smaller, granular sub-problems, assigning each agent a unique piece of the puzzle.
-*   **Perplexity Metrics & Chart:** A `metrics` node calculates the average perplexity of all agent outputs after each epoch, plotted on a live chart in the GUI.
-*   **Dynamic Summarization:** A specialized chain now automatically creates a concise summary of an agent's older memories if its memory log gets too long, preserving key insights while managing context length.
+### 3. 🧬 Algorithm Design Mode (Maximum Control + Code Generation)
 
-## The Core Idea: Mirror Descent (Qualitative Backpropagation)
+The original deep QNN mode for hard algorithmic and software problems.
 
-The core experiment is the **Qualitative Neural Network (QNN)**, an algorithm inspired by backpropagation in traditional neural networks. It's a numerical algorithm, of course, but what if the principle could be applied qualitatively? Instead of sending back a numerical error signal, you send back a "reflection."
+- Design arbitrary layer × width topologies.
+- Full hyperparameter control (prompt alignment, density, learning rate, vector word size, etc.).
+- Automatic problem decomposition into per-agent sub-problems.
+- Code-aware synthesis + real (restricted) Python sandbox execution.
+- Successful modules are documented as "module cards" and fed forward as context for future epochs.
+- Complete RAG (RAPTOR) indexing of every agent output across every epoch.
+- Post-run interactive chat directly into the network's memory ("what did agent_2_1 think about X?").
+- Final harvest produces structured research-style reports.
+- **Export / Import trained QNNs**: Save the entire evolved network (all layer prompts + state) as a compact JSON. Load it later and run new problems against the *already-evolved* specialists.
 
-After the network produces a solution, a "reflection pass" analyzes the result and **automatically re-writes the core system prompts** of the agents that contributed. The goal is for the network to "learn" from its own output over multiple cycles (epochs), refining not just its answers, but its own internal structure and approach. QNNs are also extremely human-interpretable, unlike their numerical counterparts.
+This is the mode for when you want to treat the QNN as a trainable, reusable reasoning artifact.
 
-### The Trade-Off: Speed for Depth
+---
 
-The obvious trade-off here is speed. A 6-layer network with 6 agents per layer, running for 20 epochs, can easily take 12 hours to complete. You're trading quick computation for a slow, iterative process of refinement. The algorithm excels in problems where creativity and insight override pure precision, like developing new frameworks in the social sciences.
+## The Outputs That Actually Matter
 
-## The QNN Algorithm: From Individual Agents to a Collective Mind
+A single deep local-deepthink run produces far more than an answer:
 
-The core of local-deepthink is the novel QNN algorithm that orchestrates LLM agents into a dynamic, layered network. This architecture facilitates a "forward pass" for problem-solving, a "reflection pass" for learning, and a final "harvest pass" for knowledge extraction.
+- **Evolved QNN artifacts** — Portable, versionable "trained" multi-agent systems you can share and reuse.
+- **Full evolutionary traces** — Every prompt before/after Mirror Descent, every difficulty classification, every child/parent relationship, every reframed problem.
+- **Structured distillation datasets** — Purpose-built for fine-tuning or synthetic data pipelines targeting advanced reasoning and multi-agent behavior.
+- **Interpretable intermediate state** — Because everything is explicit natural-language personas and traceable sub-problems, you can diagnose *why* the system thought what it thought at any layer and epoch.
+- **Accumulated executable knowledge** (in code modes) — Real modules that survived sandbox validation and were re-used.
 
-### The Forward Pass
+These artifacts are the real product. The final synthesized answer is a byproduct.
 
-In a QNN, the "weights" and "biases" of the network are not numerical values but the rich, descriptive personas of its agents, defined in natural language.
+---
 
-1.  **Input Layer & Decomposition**: The process starts with a user's high-level problem. A `master strategist` node first **decomposes this problem into smaller, distinct sub-problems**. These are then assigned to the first layer of agents.
-2.  **Building Depth with Dense Layers**: A `dense-spanner` chain analyzes the agents of the preceding layer and spawns a new agent in the next layer, specifically engineered to tackle a tailored challenge.
-3.  **Action**: A user's prompt initiates a cascade of information through the network until the final layer is reached, constituting a full "forward pass" of collaborative inference.
+## Why This Matters for Agentic Coding and Reasoning Research
 
-### The Reflection Pass: Learning Through Evolving Goals
+- **Test-time compute, done right and observably.** Many frontier systems hide their long reasoning inside a single model. local-deepthink makes the structure, specialization, and adaptation explicit and archivable.
+- **A credible path to better base models.** The highest-leverage use of current powerful models may be generating traces of *how* hard problems should be decomposed, attacked by specialized perspectives, critiqued, and progressively deepened. local-deepthink is purpose-built to produce that class of data at scale on consumer hardware.
+- **Reusable specialized reasoners.** An exported QNN that has spent 10–20 epochs evolving on a domain is qualitatively different from prompting a base model with a long system prompt. The specialization is *baked into the network structure and the evolved personas*.
+- **Local and long-horizon by design.** Runs for hours or days on a 32 GB laptop or a modest rig. No requirement for frontier API spend to get compounding returns.
 
-This is where a QNN truly differs from a simple multi-agent system. Instead of simply correcting errors, the network learns by continuously raising the bar.
+---
 
-1.  **Synthesis and Metrics**: A `synthesis_node` merges the final outputs into a single solution, and a `metrics_node` calculates a perplexity score for the epoch.
-2.  **Problem Re-framing**: The core of the learning loop. A `problem_reframer` node analyzes the synthesized solution and formulates a new, more ambitious problem that represents the "next logical step." This prevents the network from stagnating and pushes it toward deeper insights.
-3.  **Decomposition of the New Problem**: The newly framed problem is then broken down again into a new set of granular sub-problems.
-4.  **Updating the "Neural" Weights**: This new set of sub-problems is propagated backward through the network. An `update_agent_prompts_node` modifies each agent's core system prompt to align with its new, more advanced task for the next epoch.
+## Technical Strengths
 
-### The Final Harvest Pass: Consolidating Knowledge
+- Built on **LangGraph** with real cyclic graphs, conditional routing (epoch gateway), parallel layer execution, and proper state management — not a pile of sequential chains.
+- 195 passing tests across 11 phases, including regression tests for every bug fixed in the beta-0.0.3 quality release.
+- Clean provider model: only OpenRouter (cloud) and llama.cpp server (local). Per-agent and per-synthesis model selection supported.
+- Robust JSON handling, token tracking, streaming logs, RAPTOR hierarchical indexing, and safe(ish) code execution.
+- Real export/import of full QNN state.
+- Massive scale supported when you ask for it (Manual/Massive mode will happily run 50×50+ if your budget allows).
 
-1.  **Archival and RAG Indexing**: All agent outputs from every epoch are used to build a comprehensive RAPTOR RAG index.
-2.  **Pause for Interactive Chat & Diagnosis**: The network pauses, allowing you to directly query the RAG index. Because QNNs are highly interpretable, you can even diagnose a specific "neuron" by asking the chat about `agent_1_1` to get that specific agent's entire history.
-3.  **Interrogation and Synthesis**: When you're done, your chat is added to the knowledge base. An `interrogator` agent then formulates expert-level questions about the original problem based on your points of interest.
-4.  **Generating the Final Report**: A `paper_formatter` agent uses the RAG index to answer these questions, synthesizing the information into formal research papers. The final output is a downloadable ZIP archive of this report.
+---
 
-## Vision & Long-Term Roadmap: Training a World Language Model
+## Quick Start
 
-Every local-deepthink run generates a complete, structured trace of a multi-agent collaborative process—a dataset capturing the evolution of thought. With the new export feature, these QNN JSON files can now be collected. We see this as **powerful, multi-dimensional data for training next-generation reasoning models.**
+```bash
+git clone https://github.com/iblameandrew/local-deepthink
+cd local-deepthink
+python -m venv venv
+.\venv\Scripts\activate          # Windows
+# source venv/bin/activate       # macOS/Linux
+pip install -r requirements.txt
+launch.bat                       # or: python app.py
+```
 
-Our ultimate objective is to use this data to train a true **"World Language Model" (WLM)**. A WLM would move beyond predicting the next token to understanding the fundamental patterns of collaboration, critique, and collective intelligence. The exciting possibility is that fine-tuning a model on thousands of these QNN logs might make static system prompts obsolete, as the trained LLM would learn to implicitly figure them out and dynamically switch its reasoning process on the fly.
+Open http://127.0.0.1:8000.
 
-## Mid-Term Research Goals & How You Can Help
-This is still alpha software, and we need your help. Besides the value you get after "mining" a solution, it's also super entertaining to watch the neurons interact with each other! If you have the hardware, please consider helping us benchmark.
+**Supported providers**: OpenRouter (bring your own key) and local llama.cpp server.
 
-*   **Hunt Bugs**: If you run into a crash, please open an issue with your graph monitor trace log.
-*   **Deep Runs & Benchmarking**: I don't have access to systems like Google's DeepMind, so it would be fantastic if someone with a powerful local rig could run and benchmark moderate-to-large QNNs.
-*   **Thinking Models Support**: Help integrate support for dedicated "thinking models".
-*   **P2P Networking for Distributed Mining:** My background is in Python and AI, not distributed systems. A long-term vision is a P2P networking layer to allow multiple users to connect their instances and collectively "mine" a solution to a massive problem. If you have experience here, I would love to collaborate.
-*   **Checkpoint Import/Export**: A basic version is implemented, but expanding this to allow saving a run mid-epoch would make the system more crash-resistant.
+See the in-app UI for the three modes, topology visualization, token budgeting (especially important for Distillation), and export controls.
 
-## What's Next?
-The current focus is on polishing and debugging existing features to reach a beta phase. After that, the next iteration will introduce specialized modes and advanced capabilities:
+---
 
-*   **Recursive Module Stitching:** The initial implementation allows code validation and context feedback. The next step is to enable the system to design, code, and recursively assemble different software modules to create complex, full-stack applications from a high-level prompt.
-*   **Export your QNN:** This is now implemented! You can import and export your QNN in plain JSON format, so other people can prompt it, at just a few MBs of size.
+## Hyperparameters & Hardware Reality
 
-## Hyperparameters & Hardware Guidelines ⚙️
+- **Layers / Width**: Control depth vs. breadth of the network. 3–6 layers with 3–8 width is already deep on most problems. Massive mode exists for when you want to go further.
+- **Epochs**: The number of full forward + reflection + reframing cycles. This is where the power law lives.
+- **Learning rate / Density / Prompt alignment**: Control how aggressively agents mutate and how strongly the original problem shapes their identities.
+- **Token budget** (Distillation): The real governor. Set it high if you want serious evolutionary runs.
 
-*   **`CoT trace depth`**: The number of layers in your agent network.
-*   **`Number of epochs`**: One full cycle of a forward and reflection pass.
-*   **`Vector word size`**: The number of "seed verbs" for initial agent creation.
-*   **`Number of Questions for Final Harvest`**: The number of questions the `interrogator` agent generates.
-*   **`Prompt alignment` (0.1 - 2.0)**: How strongly an agent's career is influenced by the user's prompt.
-*   **`Density` (0.1 - 2.0)**: Modulates the influence of the previous layer when creating new agents.
-*   **`Learning rate` (0.1 - 2.0)**: Controls the magnitude of change an agent makes to its prompt.
+**Practical guidance**:
+- 32 GB RAM CPU laptop: 2×2 to 4×4 topologies, 2–4 epochs.
+- 64 GB + decent GPU: 6×6 to 10×10, more epochs, or serious Distillation runs.
+- The system is explicitly designed so that **more time and more epochs beats needing a bigger base model**.
 
-#### Hardware Recommendations:
-*   **CPU-Only Laptop (32GB RAM)**: 2x2 or 4x4 networks with 3-4 epochs are ideal.
-*   **High-End Rig (64GB RAM + 24GB GPU)**: 6x6 up to 10x10 networks with 2-10 epochs should be doable in 20-45 minutes.
+---
 
-## Technical Setup
+## Vision
 
-*   **Backend**: FastAPI, LangChain, LangGraph, LlamaCpp (via server), OpenRouter (only supported providers)
-*   **Frontend**: HTML, CSS, JavaScript
+Every serious local-deepthink run is a small laboratory experiment in collective intelligence. The structured traces it produces — complete with evolutionary dynamics, difficulty signals, and topology mutations — are some of the richest open data currently being generated about *how* LLMs can be orchestrated to think harder.
 
-### Installation and Execution
+The long-term bet is that collecting thousands of such runs will let us train models that no longer need elaborate hand-written system prompts or external scaffolding, because they have internalized the patterns of decomposition, specialization, critique, and progressive deepening directly.
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/iblameandrew/local-deepthink
-    cd local-deepthink
-    ```
-2.  **Create and activate a virtual environment:**
-    ```bash
-    python -m venv venv
-    # On Windows
-    .\venv\Scripts\activate
-    # On macOS/Linux
-    source venv/bin/activate
-    ```
-3.  **Install dependencies:** `pip install -r requirements.txt`.
-4.  **Setup LLM Provider** (only OpenRouter and LlamaCpp supported):
-    *   **OpenRouter**: Sign up at [OpenRouter](https://openrouter.ai/) and get an API key. This is the easiest way to get started with powerful models like Claude 3.5 Sonnet, etc.
-    *   **LlamaCpp Server (Local)**:
-        *   Install the server: `pip install llama-cpp-python[server]`
-        *   Download a GGUF model (e.g., from HuggingFace).
-        *   Run the server: `python -m llama_cpp.server --model path/to/model.gguf`
-    
-5.  **Run the application:**
-    ```bash
-    launch.bat
-    ```
-    *   Or manually: `python app.py` (Note: `launch.bat` handles git sync and dependencies automatically).
-6.  **Access the GUI:** Open your browser to `http://127.0.0.1:8000`.
+This is why the distillation dataset + full topology archives are treated as first-class outputs.
 
-## How It Works
+---
 
-1.  **Architect the Network**: Use the GUI to set the hyperparameters for your QNN.
-2.  **Pose a Problem**: Enter the high-level prompt you want the network to solve.
-3.  **Build and Run**: Click the "Build and Run Graph" button.
-4.  **Observe the Emergence**: Monitor the process in the real-time log viewer.
-5.  **Chat and Diagnose**: Once epochs are complete, use the chat interface to query the RAG index of the network's entire thought process.
-6.  **Harvest and Download**: When finished chatting, click "HARVEST" to generate and download the final ZIP report.
-7.  **(Optional) Export, Import, and Infer**: Use the `Export QNN` button to save your network. Later, use the `Import QNN` button to load it and run new prompts against the trained agent structure.
+## Contributing & Benchmarking
 
-It’s an open-source experiment, and I’d be grateful for any thoughts, feedback, or ideas you might have. Please support the repo if you want to see more open-source work like this!
+This is research software that has reached a solid beta (195/195 tests, all core loops functional). The most valuable contributions right now are:
 
-Thanks.
+- Deep, long runs on interesting problems (especially with local models) and sharing the exported QNNs + distillation datasets.
+- Bug reports that include the graph trace / logs.
+- Ideas for tightening the code execution loop, adding real tool use inside agents, or improving the Mirror Descent signal.
+- P2P/distributed ideas for running truly massive topologies across machines.
+
+Open an issue with your traces and thoughts.
+
+---
+
+## License & Credits
+
+Open-source research project. The goal is to push forward what small teams and individuals can do with structured, long-horizon agentic systems.
+
+If local-deepthink helps you go deeper on hard problems or generates useful traces, star the repo and share what you built with the exported QNNs or distillation data.
+
+---
+
+**local-deepthink** — Turn time and structure into depth.  
+Not more agents. Better *becoming* agents.
+
+---
+
+*Beta 0.0.3 quality release. See [RELEASE_NOTES.md](./RELEASE_NOTES.md) for the full test and bug-fix history.*
