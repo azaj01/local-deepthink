@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "local-deepthink"
+dynamic = ["version"]
+description = "Democratizing Deep Algorithmic Thought - a Qualitative Neural Network engine for local LLMs"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "iblameandrew" }
+]
+keywords = [
+    "ai", "multi-agent", "qnn", "langgraph", "llm",
+    "openrouter", "llamacpp", "knowledge-distillation",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "python-dotenv",
+    "sse-starlette",
+    "python-multipart",
+    "aiohttp",
+    "langchain-core",
+    "langchain-community",
+    "langchain-openai",
+    "langchain-text-splitters",
+    "langgraph",
+    "grandalf",
+    "faiss-cpu",
+    "scikit-learn",
+    "numpy",
+    "pymupdf>=1.24.0",
+    "names",
+    "openai",
+    "pydantic",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/iblameandrew/local-deepthink"
+"Issues" = "https://github.com/iblameandrew/local-deepthink/issues"
+
+[tool.setuptools]
+packages = [
+    "deepthink",
+    "deepthink.chains",
+    "deepthink.models",
+    "deepthink.nodes",
+    "deepthink.distillation",
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "deepthink.__version__" }

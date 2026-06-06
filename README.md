@@ -71,6 +71,12 @@ The **Qualitative Neural Network (QNN)** algorithm that powers this system is gr
 
 ## Changelog
 
+*  **`beta-0.0.3` — Quality release** ([RELEASE_NOTES.md](./RELEASE_NOTES.md)):
+   11 bugs fixed end-to-end (critical: distillation mock LLM, CoderMockLLM
+   decomposition count, missing `grandalf` dep, brainstorm-synthesis
+   empty-input crash). 195/195 tests pass across an 11-phase test suite.
+   Added `__version__` metadata, `pyproject.toml`, regression tests for
+   every bug fixed.
 *  **Provider Cleanup**: Deleted XAI/Grok (and Gemini) as provider options in all modes (Algorithm Design, Brainstorming, Distillation). Now sticks purely to OpenRouter and LlamaCpp Server. Removed related code, UI elements, imports (langchain-google-genai, langchain-xai, xai-sdk). Updated requirements.txt so that `pip install -r requirements.txt` + `python app.py` works cleanly for the supported providers (verified in fresh venv).
 *  **Per-Model Control**: Users can now specify a separate model for the Synthesis step, and a comma-separated list of models for per-agent use (cycles through the list across the QNN agents/layers). Works for both OpenRouter (different models via same key) and LlamaCpp (if server accepts model param). Applies to Algorithm and Brainstorming QNNs (and influences Distillation model choice). UI fields added to settings panel, passed through all modes.
 *  **App Title + Massive QNN Option**: Changed app title to "army of agents to think about your problem." In Brainstorming Mode, users now get an explicit choice: **Auto** (small recommended panel via complexity estimator, 2-5) **or Manual/Massive** where you directly specify any Layers × Width (e.g. 100×100) to spawn a giant QNN army at your request. Backend honors large values with no artificial cap (use responsibly).

@@ -1,12 +1,40 @@
+# Python
 **/__pycache__/
 **/.pytest_cache/
 *.pyc
-*.json
-*.log
-*.~
-*.un~
-*.csv
-.venv/
-*.env
-*.mmd
+*.pyo
+*.pyd
 
+# Editors
+*~
+*.un~
+
+# Venvs
+.venv/
+venv/
+env/
+
+# Test artifacts
+tests/test_results/
+tests/__pycache__/
+tests/_dbg*.py
+test_results/
+
+# Distillation run outputs
+distillation_output/
+
+# Local data and secrets
+.env
+*.env
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# LangChain / RAPTOR caches
+.ruff_cache/

@@ -25,6 +25,11 @@ langchain-openai
 langchain-text-splitters
 langgraph
 
+# Required by langgraph's `graph.get_graph().draw_ascii()` (used in build_and_run_graph)
+# Without this, the entire /build_and_run_graph endpoint crashes with
+# "Install grandalf to draw graphs: `pip install grandalf`".
+grandalf
+
 # Vector store + ML (FAISS + KMeans in RAPTOR)
 faiss-cpu
 scikit-learn

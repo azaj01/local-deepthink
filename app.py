@@ -27,6 +27,7 @@ from langchain_core.retrievers import BaseRetriever
 from typing import Dict, Any, TypedDict, Annotated, Tuple
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 # langchain_community is deprecated / being sunset (see warning on import).
 # We still depend on it for the FAISS vectorstore integration (widely used pattern).
 # Migration path: https://github.com/langchain-ai/langchain-community/issues/674
@@ -115,7 +116,7 @@ class TokenUsageTracker(AsyncCallbackHandler):
             await self.log_stream.put(f"TOKEN_USAGE: {json.dumps(data)}")
 
         except Exception as e:
-            print(f"Token tracking error: {e}")
+            await self.log_stream.put(f"WARNING: Token tracking error: {e}")
 
 
 load_dotenv()
@@ -222,9 +223,17 @@ class RAPTOR:
         )
 
         if not embeddings:
-            print(
-                "WARNING: Embeddings generation returned empty. Skipping clustering for this level."
-            )
+            # _cluster_nodes is synchronous; we cannot await log_stream here.
+            # Use a best-effort asyncio schedule if a loop is running, else print.
+            msg = "WARNING: Embeddings generation returned empty. Skipping clustering for this level."
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    loop.create_task(log_stream.put(msg))
+                else:
+                    print(msg)
+            except RuntimeError:
+                print(msg)
             return [list(range(len(docs)))]
 
         X = np.array(embeddings)
@@ -240,7 +249,16 @@ class RAPTOR:
         try:
             kmeans.fit(X)
         except ValueError as e:
-            print(f"WARNING: KMeans failed: {e}. Fallback to single cluster.")
+            # _cluster_nodes is synchronous; we cannot await log_stream here.
+            msg = f"WARNING: KMeans failed: {e}. Fallback to single cluster."
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    loop.create_task(log_stream.put(msg))
+                else:
+                    print(msg)
+            except RuntimeError:
+                print(msg)
             return [list(range(len(docs)))]
 
         labels = kmeans.labels_
@@ -306,10 +324,11 @@ class DistillationMockLLM(Runnable):
         # Simulate processing time
         await asyncio.sleep(0.05)
 
-        # 1. Task Master (Decomposition)
+        # 1. Task Master (Decomposition) — matches the current Socratic Task Master
+        #    prompt in deepthink/chains/distillation_chains.py:get_task_master_chain.
         if (
-            "you are the task master node" in prompt
-            and "break down a complex" in prompt
+            "you are the socratic task master" in prompt
+            and "knowledge distillation network" in prompt
         ):
             return AIMessage(
                 content=json.dumps(
@@ -332,8 +351,9 @@ class DistillationMockLLM(Runnable):
                 )
             )
 
-        # 2. Seed Creator (New Topics)
-        elif "you are the seed creator agent" in prompt:
+        # 2. Seed Creator (New Topics) — matches the rewritten "Seed Creator (The
+        #    Dialectic Synthesizer)" prompt.
+        elif "you are the seed creator" in prompt:
             return AIMessage(
                 content=json.dumps(
                     {
@@ -355,8 +375,12 @@ class DistillationMockLLM(Runnable):
                 )
             )
 
-        # 3. Followup Questions
-        elif "you are the task master" in prompt and "entering a new epoch" in prompt:
+        # 3. Followup Questions — matches the rewritten followup chain ("deepening
+        #    our inquiry in a new Epoch").
+        elif (
+            "you are the socratic task master" in prompt
+            and "deepening our inquiry" in prompt
+        ):
             return AIMessage(
                 content=json.dumps(
                     {
@@ -607,11 +631,15 @@ Generate your code-focused critique for the team:"""
         elif "analyze the following text for its perplexity" in prompt:
             return str(random.uniform(5.0, 40.0))
         elif "you are a master strategist and problem decomposer" in prompt:
+            # Match the requested count from the prompt so the mock can drive
+            # reframe_and_decompose for any sized QNN (bug fix: was hardcoded to 4).
+            num_match = re.search(r"generate:\s*(\d+)", prompt)
+            if not num_match:
+                num_match = re.search(r"exactly\s*(\d+)", prompt)
+            n = int(num_match.group(1)) if num_match else 4
             sub_problems = [
-                "Design the database schema for user accounts.",
-                "Implement the REST API endpoint for user authentication.",
-                "Develop the frontend login form component.",
-                "Write unit tests for the authentication service.",
+                f"Mock sub-problem #{i + 1}: implement the {i + 1}-th piece of the requested system."
+                for i in range(n)
             ]
             return json.dumps({"sub_problems": sub_problems})
 
@@ -1178,6 +1206,12 @@ class GraphState(TypedDict):
     session_id: str
     chat_history: List[dict]
     mode: Optional[str]  # "algorithm" or "brainstorm"
+    # Brainstorm-mode context. The keys are read in many nodes via state.get(...)
+    # so adding them here is purely a type-honesty fix; runtime already worked
+    # because TypedDict is structural at runtime.
+    brainstorm_document_context: str
+    brainstorm_prior_conversation: str
+    brainstorm_problem_summary: str
 
 
 def execute_code_in_sandbox(code: str) -> (bool, str):
@@ -1471,9 +1505,25 @@ def create_synthesis_node(llm):
             f"LOG: Synthesizing {len(last_layer_outputs)} outputs from the final agent layer (Layer {last_agent_layer_idx})."
         )
 
-        if not last_layer_outputs:
-            await log_stream.put("WARNING: Synthesis node received no inputs.")
-            return {"final_solution": {"error": "Synthesis node received no inputs."}}
+        if state.get("mode") == "brainstorm":
+            # Brainstorm Synthesis — uses `memory`, NOT `agent_outputs`.
+            # Optimization: Only synthesize on the final epoch
+            if state["epoch"] < state["max_epochs"] - 1:
+                await log_stream.put(
+                    f"LOG: [BRAINSTORM] Skipping intermediate synthesis (Epoch {state['epoch']}) to save resources."
+                )
+                return {"final_solution": None}
+
+            # Brainstorm synthesis uses `memory` (per-agent history of reflections),
+            # NOT `agent_outputs`. The check above for last_layer_outputs is for
+            # the algorithm path. In brainstorm mode we must not bail out here.
+            if not state.get("memory"):
+                await log_stream.put(
+                    "WARNING: Synthesis node received no inputs (brainstorm memory empty)."
+                )
+                return {
+                    "final_solution": {"error": "Synthesis node received no inputs."}
+                }
 
         if state.get("mode") == "brainstorm":
             # Brainstorm Synthesis
@@ -1484,6 +1534,17 @@ def create_synthesis_node(llm):
                     f"LOG: [BRAINSTORM] Skipping intermediate synthesis (Epoch {state['epoch']}) to save resources."
                 )
                 return {"final_solution": None}
+
+            # Brainstorm synthesis uses `memory` (per-agent history of reflections),
+            # NOT `agent_outputs`. The check above for last_layer_outputs is for
+            # the algorithm path. In brainstorm mode we must not bail out here.
+            if not state.get("memory"):
+                await log_stream.put(
+                    "WARNING: Synthesis node received no inputs (brainstorm memory empty)."
+                )
+                return {
+                    "final_solution": {"error": "Synthesis node received no inputs."}
+                }
 
             await log_stream.put(
                 "LOG: [BRAINSTORM] Final Epoch reached. Synthesizing full conversation history..."
@@ -1568,7 +1629,15 @@ def create_synthesis_node(llm):
             await log_stream.put(f"FINAL_ANSWER: {json.dumps(final_solution_str)}")
 
         else:
-            # Algorithm / Code Synthesis
+            # Algorithm / Code Synthesis — uses `last_layer_outputs` (agent_outputs).
+            # We only get here in algorithm mode; the brainstorm branch above
+            # already returned. Defensive check: in algorithm mode last_layer_outputs
+            # must be non-empty (set above).
+            if not last_layer_outputs:
+                await log_stream.put("WARNING: Synthesis node received no inputs.")
+                return {
+                    "final_solution": {"error": "Synthesis node received no inputs."}
+                }
             invoke_params = {
                 "original_request": state["original_request"],
                 "agent_solutions": json.dumps(last_layer_outputs, indent=2),
@@ -2239,7 +2308,12 @@ async def run_inference_from_state(payload: dict = Body(...)):
                 node_id = f"agent_{i}_{j}"
                 workflow.add_node(node_id, create_inference_node_function(node_id))
 
-        workflow.add_node("synthesis", create_synthesis_node(synthesis_llm if 'synthesis_llm' in locals() else llm))
+        workflow.add_node(
+            "synthesis",
+            create_synthesis_node(
+                synthesis_llm if "synthesis_llm" in locals() else llm
+            ),
+        )
 
         first_layer_nodes = [f"agent_0_{j}" for j in range(len(all_layers_prompts[0]))]
         workflow.set_entry_point(first_layer_nodes[0])
@@ -2326,11 +2400,17 @@ async def build_and_run_graph(payload: dict = Body(...)):
             llamacpp_url = llamacpp_url + "/v1"
         llamacpp_api_key = "no-key-required"
 
-        default_agent_model = openrouter_model if provider == "openrouter" else llamacpp_model
+        default_agent_model = (
+            openrouter_model if provider == "openrouter" else llamacpp_model
+        )
 
         synthesis_model = params.get("synthesis_model", "").strip()
         agent_models_raw = params.get("agent_models", "").strip()
-        agent_model_list = [m.strip() for m in agent_models_raw.split(",") if m.strip()] if agent_models_raw else []
+        agent_model_list = (
+            [m.strip() for m in agent_models_raw.split(",") if m.strip()]
+            if agent_models_raw
+            else []
+        )
 
         if provider == "openrouter":
             if not api_key:
@@ -2420,9 +2500,13 @@ async def build_and_run_graph(payload: dict = Body(...)):
                         temperature=0.7,
                         callbacks=[token_tracker],
                     )
-                    await log_stream.put(f"--- Using separate SYNTHESIS model: {synthesis_model} ---")
+                    await log_stream.put(
+                        f"--- Using separate SYNTHESIS model: {synthesis_model} ---"
+                    )
                 except Exception as e:
-                    await log_stream.put(f"WARNING: Could not init separate synthesis LLM, falling back: {e}")
+                    await log_stream.put(
+                        f"WARNING: Could not init separate synthesis LLM, falling back: {e}"
+                    )
             elif provider == "llamacpp":
                 try:
                     synthesis_llm = ChatLlamaCpp(
@@ -2432,9 +2516,13 @@ async def build_and_run_graph(payload: dict = Body(...)):
                         temperature=0.7,
                         max_tokens=4096,
                     )
-                    await log_stream.put(f"--- Using separate SYNTHESIS model: {synthesis_model} ---")
+                    await log_stream.put(
+                        f"--- Using separate SYNTHESIS model: {synthesis_model} ---"
+                    )
                 except Exception as e:
-                    await log_stream.put(f"WARNING: Could not init separate synthesis LLM, falling back: {e}")
+                    await log_stream.put(
+                        f"WARNING: Could not init separate synthesis LLM, falling back: {e}"
+                    )
 
         # Custom Debug Mode Logic (Prioritize Mock LLMs but KEEP Embeddings if available)
         is_debug = (
@@ -2602,7 +2690,9 @@ async def build_and_run_graph(payload: dict = Body(...)):
                                 "Failed to parse complexity estimation response"
                             )
 
-                        cot_trace_depth = int(complexity_data.get("recommended_layers", 2))
+                        cot_trace_depth = int(
+                            complexity_data.get("recommended_layers", 2)
+                        )
                         width = int(complexity_data.get("recommended_width", 3))
 
                         await log_stream.put(
@@ -3172,8 +3262,9 @@ async def chat_with_index(payload: dict = Body(...)):
     message = payload.get("message")
     session_id = payload.get("session_id")
 
-    print("Sesion keys: ", sessions.keys())
-    print("Session ID: ", session_id)
+    await log_stream.put(
+        f"LOG: [CHAT] session_id={session_id}, active_sessions={len(sessions)}"
+    )
 
     if not session_id or session_id not in list(sessions.keys()):
         return JSONResponse(content={"error": "Invalid session ID"}, status_code=404)
@@ -3208,7 +3299,7 @@ async def chat_with_index(payload: dict = Body(...)):
             state["chat_history"].append({"role": "ai", "content": full_response})
 
         except Exception as e:
-            print(f"Error during chat streaming: {e}")
+            await log_stream.put(f"ERROR: Error during chat streaming: {e}")
             yield f"Error: Could not generate response. {e}"
 
     return StreamingResponse(stream_response(), media_type="text/event-stream")
@@ -3220,13 +3311,14 @@ async def diagnostic_chat_with_index(payload: dict = Body(...)):
     session_id = payload.get("session_id")
     message = payload.get("message")
 
-    print("Sesion keys: ", sessions.keys())
-    print("Session ID: ", session_id)
+    await log_stream.put(
+        f"LOG: [DIAGNOSTIC_CHAT] session_id={session_id}, active_sessions={len(sessions)}"
+    )
 
     if not session_id or session_id not in list(sessions.keys()):
         return JSONResponse(content={"error": "Invalid session ID"}, status_code=404)
 
-    print("Entering diagnostic_chat_with_index")
+    await log_stream.put("LOG: [DIAGNOSTIC_CHAT] entering diagnostic handler")
 
     state = sessions[session_id]
     raptor_index = state.get("raptor_index")
@@ -3264,7 +3356,7 @@ async def diagnostic_chat_with_index(payload: dict = Body(...)):
                 yield response_chunk
 
         except Exception as e:
-            print(f"Error during diagnostic chat streaming: {e}")
+            await log_stream.put(f"ERROR: Error during diagnostic chat streaming: {e}")
             yield f"Error: Could not generate response. {e}"
 
     return StreamingResponse(stream_response(), media_type="text/event-stream")
@@ -3443,7 +3535,12 @@ async def start_distillation(payload: dict = Body(...)):
             )
         else:
             # For distillation, use synthesis_model as override if provided, else main model
-            distil_model = payload.get("synthesis_model", "").strip() or payload.get("openrouter_model", "stepfun/step-3.5-flash:free") if provider == "openrouter" else payload.get("llamacpp_model", "llama-3.2-1b-instruct")
+            distil_model = (
+                payload.get("synthesis_model", "").strip()
+                or payload.get("openrouter_model", "stepfun/step-3.5-flash:free")
+                if provider == "openrouter"
+                else payload.get("llamacpp_model", "llama-3.2-1b-instruct")
+            )
             if provider == "openrouter":
                 if not api_key:
                     return JSONResponse(

@@ -2,6 +2,7 @@
 Brainstorming mode chain factories.
 Chains for complexity estimation, expert reflection, and QNN brainstorming.
 """
+
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
@@ -77,8 +78,15 @@ Your response should be 2-4 sentences of substantive analysis.
     return prompt | llm | StrOutputParser()
 
 
-def get_opinion_synthesizer_chain(llm):
-    """Synthesizes all expert opinions into a final coherent response."""
+def get_brainstorming_opinion_synthesizer_chain(llm):
+    """Synthesizes all expert opinions into a final coherent response.
+
+    NOTE: previously this was named `get_opinion_synthesizer_chain`, which collided
+    with the identically-named factory in `synthesis_chains.py`. The shared name
+    caused the import order in `deepthink/chains/__init__.py` to silently override
+    one definition with the other. It is now exported under a unique name and
+    re-imported through `__init__.py` with that explicit alias.
+    """
     prompt = ChatPromptTemplate.from_template("""
 You are a master synthesizer. You have received opinions from multiple experts on a user's question.
 Your task is to synthesize these diverse perspectives into a coherent, actionable response.
@@ -105,6 +113,7 @@ Synthesized Response:
 
 
 # ==================== QNN BRAINSTORMING CHAINS ====================
+
 
 def get_brainstorming_seed_chain(llm):
     """
@@ -309,9 +318,11 @@ Create a concise "Problem Usage Summary" (1-2 paragraphs).
 Problem Usage Summary:
 """)
     return prompt | llm | StrOutputParser()
+
+
 def get_brainstorming_polisher_chain(llm):
     """
-    Takes the initial brainstorming synthesis and formats it into a nice, 
+    Takes the initial brainstorming synthesis and formats it into a nice,
     conversational, and extensive final answer.
     """
     prompt = ChatPromptTemplate.from_template("""
