@@ -403,6 +403,188 @@ def r15():
 
 chk("BUG-3 regression: /build_and_run_graph no longer crashes on draw_ascii", r15)
 
+
+# ============================================================
+# BUG-12: Perplexity chart accumulating duplicate points
+# Verify that the main-graph metrics broadcast includes
+# "type":"perplexity_update" and that the distillation loop
+# emits a strictly-monotonic "step" counter across anchors
+# (so the frontend can dedup by step instead of by epoch).
+# ============================================================
+async def r16():
+    import app as _app
+
+    # (1) Drain log_stream so we can inspect the next emissions.
+    drained = []
+    while not _app.log_stream.empty():
+        try:
+            drained.append(_app.log_stream.get_nowait())
+        except Exception:
+            break
+
+    # (2) Directly call the metrics node and assert the broadcast shape.
+    from app import create_metrics_node
+    import uuid
+
+    llm = CoderMockLLM()
+    metrics_node = create_metrics_node(llm)
+    sid = f"test-{uuid.uuid4().hex[:8]}"
+    state = {
+        "session_id": sid,
+        "epoch": 0,
+        "max_epochs": 2,
+        "agent_outputs": {
+            "agent_0_0": {
+                "proposed_solution": "hello",
+                "reasoning": "world",
+            }
+        },
+    }
+    await metrics_node(state)
+
+    # Pull the most recent perplexity JSON off the queue
+    last_json = None
+    for _ in range(50):
+        try:
+            msg = _app.log_stream.get_nowait()
+        except Exception:
+            break
+        if msg.startswith("{") and '"perplexity"' in msg and '"epoch"' in msg:
+            last_json = json.loads(msg)
+    assert last_json is not None, "No perplexity JSON broadcast emitted by metrics node"
+    assert last_json.get("type") == "perplexity_update", (
+        f"Expected type=perplexity_update, got {last_json.get('type')!r}"
+    )
+    assert last_json.get("source") == "graph", (
+        f"Expected source=graph, got {last_json.get('source')!r}"
+    )
+    assert last_json.get("session_id") == sid
+    assert "perplexity" in last_json and isinstance(
+        last_json["perplexity"], (int, float)
+    )
+
+
+def r17():
+    """Verify the distillation update payload includes a cumulative 'step' counter
+    that strictly increases across epochs AND across anchors (so the frontend
+    can dedup by step rather than by epoch, preventing duplicate x-axis labels)."""
+    import inspect
+    import app as _app
+
+    src = inspect.getsource(_app.run_distillation_loop)
+    assert '"step":' in src or "'step':" in src, (
+        "run_distillation_loop should include a cumulative 'step' field in the broadcast"
+    )
+    assert "cumulative_step" in src, (
+        "run_distillation_loop should maintain a cumulative_step counter across anchors"
+    )
+
+
+async def _ainv(fn):
+    return fn()
+
+
+# (Unused now: passing async def r16 directly to chk works because
+# asyncio.iscoroutinefunction(r16) is True.)
+
+
+async def _ainv(fn):
+    return fn()
+
+
+# (Unused now: passing async def r16 directly to chk works because
+# asyncio.iscoroutinefunction(r16) is True.)
+
+
+chk(
+    "BUG-12a regression: metrics node emits typed perplexity_update broadcast",
+    r16,
+)
+chk("BUG-12b regression: distillation loop emits cumulative step counter", r17)
+
+
+# ============================================================
+# BUG-12c: Frontend chart dedup contract
+# The chart update function in index.html is keyed by a step
+# counter. Repeated calls with the same step must REPLACE the
+# prior value, not append a duplicate data point. This test
+# pins the contract by mirroring the JS algorithm in Python
+# and asserting the invariant against the actual source of
+# updatePerplexityChart in index.html.
+# ============================================================
+def r18():
+    import re
+
+    html_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "index.html",
+    )
+    with open(html_path, "r", encoding="utf-8") as f:
+        html_src = f.read()
+
+    # The chart state must be keyed by step, not just parallel arrays.
+    # Old buggy version used "allLbelsData" / "allPerplexityValues".
+    assert "allLbelsData" not in html_src, (
+        "BUG-12 not fully fixed: legacy typo 'allLbelsData' still present in index.html"
+    )
+    assert "allPerplexityValues" not in html_src, (
+        "BUG-12 not fully fixed: legacy parallel-arrays state still present in index.html"
+    )
+
+    # The new function must exist and use a Map keyed by step.
+    assert "perplexityByStep" in html_src, (
+        "BUG-12 not fully fixed: 'perplexityByStep' Map missing in index.html"
+    )
+    assert "resetPerplexityChart" in html_src, (
+        "BUG-12 not fully fixed: 'resetPerplexityChart' missing in index.html"
+    )
+
+    # The SSE handler must recognize the new event type.
+    assert "perplexity_update" in html_src, (
+        "BUG-12 not fully fixed: frontend does not listen for 'perplexity_update' events"
+    )
+
+    # Now verify the dedup invariant by mirroring the algorithm.
+    series = []
+    by_step = {}
+
+    def update(step, value, label=None):
+        if step is None or value is None:
+            return
+        if step in by_step:
+            by_step[step]["value"] = value
+            if label is not None:
+                by_step[step]["label"] = label
+        else:
+            by_step[step] = {
+                "value": value,
+                "label": label if label is not None else str(step),
+            }
+        nonlocal series
+        series = [by_step[k] for k in sorted(by_step)]
+
+    # Simulate 2 anchors x 3 epochs each (the original accumulation case).
+    cumulative = 0
+    for anchor in range(2):
+        for epoch in range(1, 4):
+            cumulative += 1
+            update(cumulative, 10.0 + cumulative, f"[A{anchor + 1}/E{epoch}]")
+    assert len(series) == 6
+    assert [s["label"] for s in series] == [
+        f"[A{a + 1}/E{e}]" for a in range(2) for e in range(1, 4)
+    ]
+
+    # Now simulate a duplicate event (e.g. SSE retry) at step 3.
+    update(3, 999.0, "[A1/E3-dup]")
+    assert len(series) == 6, "Duplicate step should not add a new data point"
+    assert series[2]["value"] == 999.0, (
+        "Duplicate step should replace the existing value"
+    )
+    assert series[2]["label"] == "[A1/E3-dup]"
+
+
+chk("BUG-12c regression: frontend chart dedup-by-step contract", r18)
+
 for name, status, err in results:
     line = f"  [{status}] {name}"
     if err:

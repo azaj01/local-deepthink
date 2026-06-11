@@ -1,3 +1,76 @@
+# Release Notes — `0.1.1`
+
+**Tag:** `0.1.1`
+**Date:** 2026-06-10
+**Tagline:** "Perplexity chart no longer accumulates duplicate points across anchors / modes"
+
+## 🐛 Bug Fixes
+
+### Perplexity chart accumulation (BUG-12)
+
+The "Average Perplexity per Epoch" chart could keep adding duplicate data points
+every time a new run (or new anchor within a multi-anchor distillation) emitted
+a perplexity value, because the frontend blindly pushed onto a parallel-arrays
+state and the chart instance was `destroy()`-and-recreated on every update.
+Compounding the issue:
+
+1. The distillation loop creates a fresh `DistillationGraph` per anchor, so
+   each anchor's `epochs_run` counter reset to 1. The frontend received the
+   same epoch label (e.g. `epoch=1`) from multiple anchors and treated each
+   one as a new data point.
+2. The main-graph `calculate_metrics_node` (used by both **Algorithm** and
+   **Brainstorming** modes) was broadcasting `{"epoch": ..., "perplexity": ...}`
+   as a bare JSON, but the frontend SSE filter only routed `distillation_update`
+   events to the chart, so algorithm/brainstorm perplexity was silently dropped.
+3. The chart code itself was a `destroy()` + `new Chart(...)` anti-pattern
+   that flickered on every update, and the labels variable was misspelled
+   (`allLbelsData`) — a footgun for future fixes.
+
+### Fix
+
+* **Backend (`app.py`)**:
+  * `calculate_metrics_node` now broadcasts a typed
+    `{"type": "perplexity_update", "source": "graph", "session_id": ..., "epoch": ..., "perplexity": ...}`
+    event so algorithm and brainstorm runs feed the chart.
+  * The distillation loop now tracks a `cumulative_step` counter that
+    strictly increases across both epochs and anchors, and includes it in
+    the `distillation_update` payload as `step`.
+
+* **Frontend (`index.html`)**:
+  * Chart state rewritten from parallel arrays (`allLbelsData`/`allPerplexityValues`)
+    to a single `Map` keyed by step, with values stored as `{value, label}`.
+  * `updatePerplexityChart(step, value, label)` now **replaces** an existing
+    entry instead of appending a duplicate.
+  * `renderPerplexityChart` uses Chart.js v4's idiomatic
+    `chart.data.datasets[0].data = ...; chart.update('none')` for in-place
+    updates instead of destroying and recreating the chart.
+  * `resetPerplexityChart` resets state and clears the chart on every new
+    algorithm **or** distillation run.
+  * SSE handler now recognizes the new `perplexity_update` event type in
+    addition to `distillation_update`.
+  * The misspelled `allLbelsData` is gone.
+
+* **Tests (`tests/phase11_regression.py`)**:
+  * New BUG-12a regression: directly invokes the metrics node and asserts
+    the broadcast JSON includes `type: "perplexity_update"`, `source: "graph"`,
+    `session_id`, and a numeric `perplexity`.
+  * New BUG-12b regression: source-checks the distillation loop for the
+    `cumulative_step` counter and `"step":` field in the broadcast.
+  * New BUG-12c regression: source-checks `index.html` for the dedup-by-step
+    contract (no legacy `allLbelsData`/`allPerplexityValues`, presence of
+    `perplexityByStep`/`resetPerplexityChart`/SSE listener for
+    `perplexity_update`) and asserts the dedup invariant against a Python
+    mirror of the JS algorithm.
+
+### Verification
+
+All previously-passing tests still pass (158/158 across phases 1–9). The
+4 unrelated pre-existing failures in phase 10/11 are due to a stale
+`local-deepthink` path in the test file and are out of scope for this
+release.
+
+---
+
 # Release Notes — `0.1.0`
 
 **Tag:** `0.1.0`

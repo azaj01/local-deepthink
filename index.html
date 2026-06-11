@@ -982,8 +982,8 @@
         let fullLogContent = '';
 
         let perplexityChart = null;
-        let allPerplexityValues = [];
-        let allLbelsData = [];
+        let perplexitySeries = [];
+        let perplexityByStep = new Map();
         let currentSessionId = null;
 
         const addLogMessage = (text, options = {}) => {
@@ -1024,8 +1024,8 @@
             if (perplexityChart) {
                 perplexityChart.destroy();
             }
-            const labels = allLbelsData;
-            const data = allPerplexityValues;
+            const labels = perplexitySeries.map(p => p.label);
+            const data = perplexitySeries.map(p => p.value);
 
             perplexityChart = new Chart(perplexityChartCanvas, {
                 type: 'line',
@@ -1048,17 +1048,45 @@
                             title: { display: true, text: 'Perplexity Score' }
                         },
                         x: {
-                            title: { display: true, text: 'Epoch' }
+                            title: { display: true, text: 'Step' }
                         }
                     }
                 }
             });
         };
 
-        const updatePerplexityChart = (epoch, perplexity) => {
-            allLbelsData.push(epoch);
-            allPerplexityValues.push(perplexity);
-            renderPerplexityChart();
+        const resetPerplexityChart = () => {
+            perplexitySeries = [];
+            perplexityByStep = new Map();
+            if (perplexityChart) {
+                perplexityChart.data.labels = [];
+                perplexityChart.data.datasets[0].data = [];
+                perplexityChart.update('none');
+            } else {
+                renderPerplexityChart();
+            }
+        };
+
+        const updatePerplexityChart = (step, value, label) => {
+            if (step === undefined || step === null || value === undefined || value === null) return;
+            if (perplexityByStep.has(step)) {
+                const existing = perplexityByStep.get(step);
+                existing.value = value;
+                existing.label = label !== undefined ? label : existing.label;
+            } else {
+                perplexityByStep.set(step, { value, label: label !== undefined ? label : String(step) });
+            }
+            perplexitySeries = Array.from(perplexityByStep.entries())
+                .sort((a, b) => a[0] - b[0])
+                .map(([, entry]) => entry);
+
+            if (perplexityChart) {
+                perplexityChart.data.labels = perplexitySeries.map(p => p.label);
+                perplexityChart.data.datasets[0].data = perplexitySeries.map(p => p.value);
+                perplexityChart.update('none');
+            } else {
+                renderPerplexityChart();
+            }
         };
 
         // --- Distillation Mode Variables ---
@@ -1219,6 +1247,7 @@
                 downloadBtn.style.display = 'none';
                 tokenBar.style.display = '';
                 distilConsole.innerHTML = `<div style="color:cyan;">--- Distillation Started (${anchors.length} anchors, Debug: ${debugMode}, Provider: ${provider}) ---</div>`;
+                resetPerplexityChart();
 
                 try {
                     const resp = await fetch('/start_distillation', {
@@ -1765,9 +1794,7 @@
                 diagnosticChatInstance.clearChat();
                 diagnosticChatInstance.setUILocked(true);
             }
-            allPerplexityValues = [];
-            allLbelsData = [];
-            renderPerplexityChart();
+            resetPerplexityChart();
             addLogMessage(`Sending request to endpoint: ${endpointUrl}`);
 
             try {
@@ -2028,7 +2055,7 @@
         eventSource.onmessage = function (event) {
             const rawMessage = event.data;
 
-            if ((rawMessage.includes('"type":') || rawMessage.startsWith('{')) && (rawMessage.includes('distillation_update') || rawMessage.includes('distillation_complete'))) {
+            if ((rawMessage.includes('"type":') || rawMessage.startsWith('{')) && (rawMessage.includes('distillation_update') || rawMessage.includes('distillation_complete') || rawMessage.includes('perplexity_update'))) {
                 try {
                     const jsonStr = rawMessage.substring(rawMessage.indexOf('{')).trim();
                     const data = JSON.parse(jsonStr);
@@ -2036,10 +2063,24 @@
                         renderAsciiTopology(data.topology, data.epoch);
                         updateDistilMetrics(data);
                         if (data.perplexity !== undefined && typeof updatePerplexityChart === 'function') {
-                            updatePerplexityChart(data.epoch, data.perplexity);
+                            const stepKey = data.step !== undefined
+                                ? data.step
+                                : ((data.anchor_index || 0) * 100000 + (data.epoch || 0));
+                            const stepLabel = `[A${(data.anchor_index || 0) + 1}/E${data.epoch || 0}]`;
+                            updatePerplexityChart(stepKey, data.perplexity, stepLabel);
                         }
                         const anchorInfo = data.anchor_index !== undefined ? `[Anchor ${data.anchor_index + 1}/${data.anchor_count}] ` : '';
                         appendDistilConsole(`${anchorInfo}[Epoch ${data.epoch}] Tokens: ${(data.token_count || 0).toLocaleString()} / ${(data.token_budget || 0).toLocaleString()} | QA: ${data.qa_pairs_count || 0}`, '#0ff');
+                    } else if (data.type === 'perplexity_update') {
+                        if (data.perplexity !== undefined && typeof updatePerplexityChart === 'function') {
+                            const stepKey = data.step !== undefined
+                                ? data.step
+                                : (data.source === 'graph'
+                                    ? `g_${data.session_id || 's'}_${data.epoch || 0}`
+                                    : (data.epoch || 0));
+                            const stepLabel = `E${data.epoch || 0}`;
+                            updatePerplexityChart(stepKey, data.perplexity, stepLabel);
+                        }
                     }
                     if (data.type === 'distillation_complete') {
                         appendDistilConsole(`✓ COMPLETE — Total QA Pairs: ${data.total_qa_pairs_count}`, '#0f0');

@@ -1870,7 +1870,17 @@ def create_metrics_node(llm):
                 f"ERROR: Could not parse perplexity score. Defaulting to 100. Raw output: '{score_str}'. Error: {e}"
             )
 
-        await log_stream.put(json.dumps({"epoch": state["epoch"], "perplexity": score}))
+        await log_stream.put(
+            json.dumps(
+                {
+                    "type": "perplexity_update",
+                    "source": "graph",
+                    "session_id": state.get("session_id"),
+                    "epoch": state["epoch"],
+                    "perplexity": score,
+                }
+            )
+        )
 
         new_history = state.get("perplexity_history", []) + [score]
         return {"perplexity_history": new_history}
@@ -3599,6 +3609,7 @@ async def run_distillation_loop(llm, topics, anchors, debug_mode):
 
     total_qa_pairs = 0
     all_dataset_paths = []
+    cumulative_step = 0
 
     for i, anchor in enumerate(anchors):
         question = anchor.get("question")
@@ -3620,13 +3631,16 @@ async def run_distillation_loop(llm, topics, anchors, debug_mode):
         while active_distillation_graph.is_running:
             try:
                 should_continue = await active_distillation_graph.run_epoch()
+                cumulative_step += 1
 
                 # Broadcast structured update to SSE
                 data = {
                     "type": "distillation_update",
+                    "source": "distillation",
                     "anchor_index": i,
                     "anchor_count": len(anchors),
                     "anchor_question": question,
+                    "step": cumulative_step,
                     "epoch": active_distillation_graph.epochs_run,
                     "topology": [
                         [a.to_dict() for a in layer]
