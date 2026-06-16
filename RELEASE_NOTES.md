@@ -1,3 +1,43 @@
+# Release Notes — `0.1.2`
+
+**Tag:** `0.1.2`
+**Date:** 2026-06-15
+**Tagline:** "Unlimited QNN dimensions with a live memory estimator for 8 GB laptops"
+
+## ✨ Features
+
+### Unlimited agent spanning (width × height)
+
+* **Algorithm Design** — CoT trace depth is no longer capped at 32. New
+  **Manual width (unlimited)** mode lets you set any number of agents per
+  layer; MBTI archetypes cycle when width exceeds the checkbox count.
+* **Brainstorming** — Manual/Massive topology layers and width inputs no longer
+  cap at 10,000. Backend accepts any positive integer the user enters.
+
+### QNN Memory Estimator
+
+A live calculator panel in both **Algorithm Design** and **Brainstorming**
+modes shows:
+
+* Total agents (`width × height`) and estimated total state size in MB/GB
+* Per-agent RAM at the selected epoch count
+* **8 GB laptop fit check** with headroom / overflow warning and a suggested
+  max agent count
+* Expandable **single-agent growth table** (epochs 1–10) as an educated guess
+  based on runtime constants: ~30 KB persona, ~5–8 KB/epoch memory append,
+  ~450 KB summarization cap per agent
+
+Users can adjust the laptop RAM input (default 8 GB); local LlamaCpp reserves
+~1.5 GB for the model automatically.
+
+### Files
+
+* `js/components/memory-calculator.js` — estimator module
+* `index.html` — calculator UI, unlimited dimension inputs, algorithm manual width toggle
+* `app.py` — removed 10k backend caps; algorithm manual width with MBTI cycling
+
+---
+
 # Release Notes — `0.1.1`
 
 **Tag:** `0.1.1`

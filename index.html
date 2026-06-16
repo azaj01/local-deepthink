@@ -418,6 +418,116 @@
             font-size: 0.9rem;
         }
 
+        .mem-calc-panel {
+            margin-bottom: 1rem;
+            padding: 12px 14px;
+            background: #141820;
+            border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .mem-calc-header {
+            font-weight: 600;
+            color: #ccc;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mem-calc-badge {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #888;
+            background: #222;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .mem-calc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .mem-calc-stat {
+            background: #1a1d24;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #2a2d35;
+        }
+
+        .mem-calc-label {
+            display: block;
+            color: #888;
+            font-size: 0.75rem;
+            margin-bottom: 2px;
+        }
+
+        .mem-calc-value {
+            color: #ddd;
+        }
+
+        .mem-calc-fit {
+            padding: 8px 10px;
+            background: #1a1d24;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .mem-calc-hint {
+            font-size: 0.8rem;
+            color: #ffaa66;
+        }
+
+        .mem-calc-details summary {
+            cursor: pointer;
+            color: #aaa;
+            font-size: 0.8rem;
+            margin-bottom: 6px;
+        }
+
+        .mem-calc-note {
+            color: #777;
+            font-size: 0.75rem;
+            margin: 6px 0;
+            line-height: 1.4;
+        }
+
+        .mem-calc-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            margin: 6px 0;
+        }
+
+        .mem-calc-table th,
+        .mem-calc-table td {
+            text-align: left;
+            padding: 4px 8px;
+            border-bottom: 1px solid #333;
+            color: #bbb;
+        }
+
+        .mem-calc-ram-input {
+            width: 70px !important;
+            padding: 4px 6px !important;
+            margin: 0 4px !important;
+            font-size: 0.85rem !important;
+            display: inline-block !important;
+        }
+
+        .topology-controls {
+            margin-bottom: 12px;
+            padding: 10px;
+            background: #1a1d24;
+            border-radius: 6px;
+            border: 1px solid #333;
+        }
+
         /* Brainstorming Mode */
         /* Mode Containers */
         /* .container display: block; REMOVED to avoid conflicts */
@@ -758,14 +868,22 @@
                 </div>
                 <div id="manual-qnn-controls" style="display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #444; gap: 12px; align-items: center; flex-wrap: wrap;">
                     <label style="color: #aaa; font-size: 0.8rem;">Layers (depth):
-                        <input type="number" id="manual_layers" value="20" min="1" max="10000" step="1"
-                            style="width: 70px; padding: 3px 6px; font-size: 0.85rem; border: 1px solid #555; background: #111; color: #eee;">
+                        <input type="number" id="manual_layers" value="20" min="1" step="1"
+                            style="width: 80px; padding: 3px 6px; font-size: 0.85rem; border: 1px solid #555; background: #111; color: #eee;">
                     </label>
                     <label style="color: #aaa; font-size: 0.8rem;">Width (agents per layer):
-                        <input type="number" id="manual_width" value="20" min="1" max="10000" step="1"
-                            style="width: 70px; padding: 3px 6px; font-size: 0.85rem; border: 1px solid #555; background: #111; color: #eee;">
+                        <input type="number" id="manual_width" value="20" min="1" step="1"
+                            style="width: 80px; padding: 3px 6px; font-size: 0.85rem; border: 1px solid #555; background: #111; color: #eee;">
                     </label>
-                    <span style="color: #ff8888; font-size: 0.75rem; max-width: 220px;">⚠️ Massive QNNs will use lots of tokens/time/$ — use with powerful backend or local models</span>
+                    <span style="color: #ff8888; font-size: 0.75rem; max-width: 280px;">⚠️ Unlimited dimensions — massive QNNs use lots of RAM, tokens, time, and cost</span>
+                </div>
+            </div>
+
+            <div class="mem-calc-panel" id="brainstorm-mem-calc"
+                data-watch="manual_layers,manual_width,brainstorm_epochs,brainstorm-ram-gb">
+                <div style="margin-bottom: 8px; color: #aaa; font-size: 0.8rem;">
+                    Laptop RAM:
+                    <input type="number" id="brainstorm-ram-gb" class="mem-calc-ram-input" value="8" min="1" max="256" step="1"> GB
                 </div>
             </div>
 
@@ -828,9 +946,38 @@
                         </div>
                     </div>
 
-                    <label for="cot_trace_depth">CoT trace depth (max 32):</label>
-                    <input type="number" id="cot_trace_depth" name="cot_trace_depth" value="2" max="32" min="2"
-                        required>
+                    <div class="topology-controls">
+                        <div style="color: #aaa; font-size: 0.85rem; margin-bottom: 6px; font-weight: 500;">QNN Dimensions (unlimited):</div>
+                        <label for="cot_trace_depth">CoT trace depth (layers / height):</label>
+                        <input type="number" id="cot_trace_depth" name="cot_trace_depth" value="2" min="1" required>
+
+                        <div style="margin-top: 8px; color: #aaa; font-size: 0.85rem; margin-bottom: 4px;">Width (agents per layer):</div>
+                        <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 8px;">
+                            <label style="font-size: 0.85rem; color: #ddd; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                <input type="radio" name="algorithm_width_mode" value="mbti" checked id="algo_width_mbti">
+                                <span>From MBTI selection (below)</span>
+                            </label>
+                            <label style="font-size: 0.85rem; color: #ffcc66; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                <input type="radio" name="algorithm_width_mode" value="manual" id="algo_width_manual">
+                                <span>Manual width (unlimited)</span>
+                            </label>
+                        </div>
+                        <div id="algo-manual-width-control" style="display: none;">
+                            <label for="algorithm_manual_width" style="color: #aaa; font-size: 0.85rem;">Agents per layer:
+                                <input type="number" id="algorithm_manual_width" name="algorithm_manual_width" value="16" min="1" step="1"
+                                    style="width: 90px; padding: 4px 6px; font-size: 0.85rem; border: 1px solid #555; background: #111; color: #eee;">
+                            </label>
+                            <span style="color: #888; font-size: 0.75rem; display: block; margin-top: 4px;">MBTI archetypes cycle when width exceeds selection count.</span>
+                        </div>
+                    </div>
+
+                    <div class="mem-calc-panel" id="algorithm-mem-calc"
+                        data-watch="cot_trace_depth,algorithm_manual_width,num_epochs,algorithm-ram-gb">
+                        <div style="margin-bottom: 8px; color: #aaa; font-size: 0.8rem;">
+                            Laptop RAM:
+                            <input type="number" id="algorithm-ram-gb" class="mem-calc-ram-input" value="8" min="1" max="256" step="1"> GB
+                        </div>
+                    </div>
 
                     <label for="num_epochs">Number of epochs:</label>
                     <input type="number" id="num_epochs" name="num_epochs" value="1" required>
@@ -949,6 +1096,7 @@
     </div>
 
     <script src="js/chart.js"></script>
+    <script src="js/components/memory-calculator.js"></script>
     <script src="js/components/node-chat.js"></script>
     <script>
         const graphParamsForm = document.getElementById('graph-params-form');
@@ -1708,6 +1856,76 @@
             };
             setupQnnModeToggle();
 
+            const getProviderIsLocal = () =>
+                (document.getElementById('llm-provider')?.value || 'openrouter') === 'llamacpp';
+
+            const getMbtiCount = () =>
+                document.querySelectorAll('input[name="mbti_archetypes"]:checked').length;
+
+            const brainstormMemCalc = QnnMemoryCalculator.init('brainstorm-mem-calc', () => {
+                const qnnMode = document.querySelector('input[name="qnn_size_mode"]:checked')?.value || 'auto';
+                const epochs = parseInt(document.getElementById('brainstorm_epochs')?.value) || 2;
+                const ramGb = parseFloat(document.getElementById('brainstorm-ram-gb')?.value) || 8;
+                if (qnnMode === 'manual') {
+                    return {
+                        width: parseInt(document.getElementById('manual_width')?.value) || 1,
+                        height: parseInt(document.getElementById('manual_layers')?.value) || 1,
+                        epochs,
+                        mode: 'brainstorm',
+                        ramGb,
+                        isLocalModel: getProviderIsLocal(),
+                        widthLabel: 'Width',
+                        heightLabel: 'Layers',
+                    };
+                }
+                return {
+                    epochs,
+                    mode: 'brainstorm',
+                    ramGb,
+                    isLocalModel: getProviderIsLocal(),
+                    autoRange: { minW: 2, maxW: 5, minH: 2, maxH: 5 },
+                };
+            });
+
+            const algorithmMemCalc = QnnMemoryCalculator.init('algorithm-mem-calc', () => {
+                const widthMode = document.querySelector('input[name="algorithm_width_mode"]:checked')?.value || 'mbti';
+                const height = parseInt(document.getElementById('cot_trace_depth')?.value) || 1;
+                const width = widthMode === 'manual'
+                    ? (parseInt(document.getElementById('algorithm_manual_width')?.value) || 1)
+                    : Math.max(1, getMbtiCount());
+                const epochs = parseInt(document.getElementById('num_epochs')?.value) || 1;
+                const ramGb = parseFloat(document.getElementById('algorithm-ram-gb')?.value) || 8;
+                return {
+                    width,
+                    height,
+                    epochs,
+                    mode: 'algorithm',
+                    ramGb,
+                    isLocalModel: getProviderIsLocal(),
+                    widthLabel: 'Width',
+                    heightLabel: 'Depth',
+                };
+            });
+
+            document.querySelectorAll('input[name="mbti_archetypes"]').forEach((cb) => {
+                cb.addEventListener('change', () => algorithmMemCalc?.update());
+            });
+
+            const setupAlgorithmWidthToggle = () => {
+                const mbtiRadio = document.getElementById('algo_width_mbti');
+                const manualRadio = document.getElementById('algo_width_manual');
+                const manualControl = document.getElementById('algo-manual-width-control');
+                if (!mbtiRadio || !manualRadio || !manualControl) return;
+                const update = () => {
+                    manualControl.style.display = manualRadio.checked ? 'block' : 'none';
+                    algorithmMemCalc?.update();
+                };
+                mbtiRadio.addEventListener('change', update);
+                manualRadio.addEventListener('change', update);
+                update();
+            };
+            setupAlgorithmWidthToggle();
+
             downloadLogButton.addEventListener('click', downloadLog);
 
 
@@ -1915,6 +2133,12 @@
             if (!params.mbti_archetypes || params.mbti_archetypes.length < 2) {
                 alert('Please select at least 2 MBTI archetypes.');
                 return;
+            }
+
+            const algoWidthMode = document.querySelector('input[name="algorithm_width_mode"]:checked')?.value || 'mbti';
+            params.algorithm_width_mode = algoWidthMode;
+            if (algoWidthMode === 'manual') {
+                params.algorithm_manual_width = parseInt(document.getElementById('algorithm_manual_width')?.value) || 1;
             }
 
             // Include Global Provider Settings (only openrouter / llamacpp)

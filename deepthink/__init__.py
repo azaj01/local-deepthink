@@ -1,6 +1,6 @@
-__version__ = "0.1.1"
-__release_name__ = "perplexity-chart-accumulation-fix"
-__release_tag__ = "0.1.1"
+__version__ = "0.1.2"
+__release_name__ = "unlimited-qnn-memory-calculator"
+__release_tag__ = "0.1.2"
 
 # deepthink package initialization
 from .utils import clean_and_parse_json, execute_code_in_sandbox

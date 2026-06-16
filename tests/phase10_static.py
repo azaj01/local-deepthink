@@ -412,13 +412,48 @@ def t22():
 chk("git is functional in repo", t22)
 
 
-# 23) CHANGELOG/RELEASE file - is there one?
+# 23) Memory calculator and unlimited QNN dimensions in index.html
 def t23():
-    # We will create one as part of the release
-    pass
+    with open(
+        r"C:\Users\def78\smenos\open-deepthink\index.html", "r", encoding="utf-8"
+    ) as f:
+        html = f.read()
+    assert "memory-calculator.js" in html
+    assert "brainstorm-mem-calc" in html
+    assert "algorithm-mem-calc" in html
+    assert "algorithm_width_mode" in html
+    assert 'id="manual_layers"' in html and 'max="10000"' not in html.split('id="manual_layers"')[1][:200]
+    assert 'id="cot_trace_depth"' in html and 'max="32"' not in html
 
 
-chk("RELEASE_NOTES / CHANGELOG existence (informational)", t23)
+chk("index.html has memory calculator and unlimited dimension inputs", t23)
+
+
+# 24) Backend accepts unlimited manual topology (no 10000 cap)
+def t24():
+    import importlib
+
+    app_mod = importlib.import_module("app")
+    src = inspect_getsource(app_mod.build_and_run_graph)
+    assert "min(10000" not in src
+    assert "algorithm_width_mode" in src
+    assert "j % num_mbti_types" in src
+
+
+chk("build_and_run_graph supports unlimited dims and manual algorithm width", t24)
+
+
+# 25) CHANGELOG/RELEASE file - is there one?
+def t25():
+    with open(
+        r"C:\Users\def78\smenos\open-deepthink\RELEASE_NOTES.md", "r", encoding="utf-8"
+    ) as f:
+        text = f.read()
+    assert "0.1.2" in text
+    assert "Memory Estimator" in text or "memory estimator" in text.lower()
+
+
+chk("RELEASE_NOTES has 0.1.2 memory calculator release", t25)
 
 for name, status, err in results:
     line = f"  [{status}] {name}"

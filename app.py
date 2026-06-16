@@ -2660,9 +2660,8 @@ async def build_and_run_graph(payload: dict = Body(...)):
                     try:
                         raw_layers = int(params.get("manual_layers", 5))
                         raw_width = int(params.get("manual_width", 5))
-                        # Allow truly massive if user wants it (no artificial 5 cap)
-                        cot_trace_depth = max(1, min(10000, raw_layers))
-                        width = max(1, min(10000, raw_width))
+                        cot_trace_depth = max(1, raw_layers)
+                        width = max(1, raw_width)
                         await log_stream.put(
                             "--- [BRAINSTORM] USER-REQUESTED MANUAL / MASSIVE QNN TOPOLOGY ---"
                         )
@@ -2822,7 +2821,7 @@ Your Specialty is: {persona.get("specialty", "Analysis")}.
             # ALGORITHM MODE SETUP (Existing Logic)
             mbti_archetypes = params.get("mbti_archetypes")
             word_vector_size = int(params.get("vector_word_size"))
-            cot_trace_depth = int(params.get("cot_trace_depth", 3))
+            cot_trace_depth = max(1, int(params.get("cot_trace_depth", 3)))
 
             if not mbti_archetypes or len(mbti_archetypes) < 2:
                 return JSONResponse(
@@ -2830,10 +2829,20 @@ Your Specialty is: {persona.get("specialty", "Analysis")}.
                     status_code=400,
                 )
 
+            algorithm_width_mode = params.get("algorithm_width_mode", "mbti")
+            if algorithm_width_mode == "manual":
+                num_agents_per_layer = max(
+                    1, int(params.get("algorithm_manual_width", len(mbti_archetypes)))
+                )
+                await log_stream.put(
+                    f"LOG: Manual algorithm width: {num_agents_per_layer} agents/layer (MBTI types cycle)."
+                )
+            else:
+                num_agents_per_layer = len(mbti_archetypes)
+
             await log_stream.put(
                 "--- Decomposing Original Problem into Subproblems ---"
             )
-            num_agents_per_layer = len(mbti_archetypes)
             total_agents_to_create = num_agents_per_layer * cot_trace_depth
             decomposition_chain = get_problem_decomposition_chain(llm)
 
@@ -2859,10 +2868,6 @@ Your Specialty is: {persona.get("specialty", "Analysis")}.
                     else:
                         decomposed_problems_map[agent_id] = user_prompt
 
-            # Generate Seeds & Spanners
-            all_verbs = []  # ... skipped full seed logic re-implementation for brevity, relying on user request to refactor, assuming simple copy valid or just condensed
-            # ACTUALLY I MUST KEEP THE LOGIC.
-            # I will assume the original logic was:
             num_mbti_types = len(mbti_archetypes)
             total_verbs_to_generate = word_vector_size * num_mbti_types
             seed_generation_chain = get_seed_generation_chain(llm)
@@ -2882,12 +2887,13 @@ Your Specialty is: {persona.get("specialty", "Analysis")}.
 
             for i in range(cot_trace_depth):
                 layer_prompts = []
-                for j, (m, gw) in enumerate(seeds.items()):
+                for j in range(num_agents_per_layer):
+                    mbti = mbti_archetypes[j % num_mbti_types]
+                    gw = seeds[mbti]
                     agent_id = f"agent_{i}_{j}"
-                    # Generate prompt...
                     prompt = await input_spanner_chain.ainvoke(
                         {
-                            "mbti_type": m,
+                            "mbti_type": mbti,
                             "guiding_words": gw,
                             "sub_problem": decomposed_problems_map[agent_id],
                             "critique": "",
@@ -2897,7 +2903,7 @@ Your Specialty is: {persona.get("specialty", "Analysis")}.
                     layer_prompts.append(prompt)
                     agent_personas[agent_id] = {
                         "name": names.get_full_name(),
-                        "mbti_type": m,
+                        "mbti_type": mbti,
                     }
                 all_layers_prompts.append(layer_prompts)
 
