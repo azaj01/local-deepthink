@@ -219,4 +219,4 @@ Not more agents. Better *becoming* agents.
 
 ---
 
-*Version 0.1.0 — Official release out of beta. See [RELEASE_NOTES.md](./RELEASE_NOTES.md) for the full history.*
+*Version 0.1.4 — See [RELEASE_NOTES.md](./RELEASE_NOTES.md) for the full history.*

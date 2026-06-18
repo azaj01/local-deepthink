@@ -98,7 +98,7 @@ const QnnMemoryCalculator = (() => {
         const fit = fitOnLaptop(grid, ramGb, isLocalModel);
         const growth = agentGrowthTable(mode, Math.min(10, Math.max(epochs, 5)));
 
-        const statusColor = fit.fits ? '#6fcf6f' : '#ff8888';
+        const statusClass = fit.fits ? 'mem-calc-fit--ok' : 'mem-calc-fit--warn';
         const statusIcon = fit.fits ? '✅' : '⚠️';
         const statusText = fit.fits
             ? `Fits in ~${fit.availableGb.toFixed(1)} GB available (${fit.headroomMb.toFixed(0)} MB headroom)`
@@ -128,7 +128,7 @@ const QnnMemoryCalculator = (() => {
                     <span class="mem-calc-value">${totalRange || '~' + formatMb(grid.totalMb)}</span>
                 </div>
             </div>
-            <div class="mem-calc-fit" style="color:${statusColor}">
+            <div class="mem-calc-fit ${statusClass}">
                 ${statusIcon} <strong>${ramGb} GB laptop:</strong> ${statusText}
                 ${!fit.fits ? `<br><span class="mem-calc-hint">Try ≤ ${fit.maxAgents.toLocaleString()} agents total (e.g. ${fit.maxSide}×${fit.maxSide}) on this RAM budget.</span>` : ''}
             </div>

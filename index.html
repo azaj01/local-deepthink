@@ -11,689 +11,7 @@
     <link rel="stylesheet" href="css/prism-okaidia.min.css">
     <link rel="stylesheet" href="css/prism-toolbar.min.css">
     <link rel="stylesheet" href="css/node-chat.css">
-    <style>
-        :root {
-            --primary-color: #0E1117;
-            --secondary-color: #262730;
-            --accent-color: #FF4B4B;
-            --text-color: #FAFAFA;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            --border-radius: 0.5rem;
-        }
-
-        body {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            font-family: var(--font-family);
-            margin: 0;
-            padding: 2rem;
-            font-size: 16px;
-            line-height: 1.6;
-        }
-
-        h1,
-        h2 {
-            color: var(--text-color);
-            border-bottom: 1px solid var(--secondary-color);
-            padding-bottom: 0.5rem;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 2.5rem;
-            border-bottom: none;
-        }
-
-        h2 {
-            font-size: 1.75rem;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: var(--primary-color);
-            padding: 2rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 2rem;
-        }
-
-        .section {
-            background-color: var(--secondary-color);
-            padding: 2rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 2rem;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        input,
-        textarea,
-        button,
-        select {
-            width: 100%;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            border: 1px solid var(--secondary-color);
-            background-color: #1C1E25;
-            color: var(--text-color);
-            border-radius: var(--border-radius);
-            box-sizing: border-box;
-            font-family: inherit;
-            font-size: 1rem;
-        }
-
-        input:focus,
-        textarea:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 2px rgba(255, 75, 75, 0.3);
-        }
-
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        button {
-            cursor: pointer;
-            background-color: var(--accent-color);
-            color: var(--text-color);
-            font-weight: bold;
-            border: none;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover:not(:disabled) {
-            background-color: #E03C3C;
-        }
-
-        button:disabled {
-            background-color: #555;
-            cursor: not-allowed;
-        }
-
-        #log-container {
-            height: 400px;
-            background-color: #000;
-            border: 1px solid var(--secondary-color);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            overflow-y: scroll;
-            font-family: 'Menlo', 'Consolas', 'Courier New', monospace;
-            font-size: 0.9em;
-            color: #C0C0C0;
-            white-space: pre-wrap;
-        }
-
-        #graph-container {
-            min-height: 400px;
-            background-color: #000;
-            border: 1px solid var(--secondary-color);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            overflow-x: auto;
-            font-family: 'Menlo', 'Consolas', 'Courier New', monospace;
-            font-size: 0.9em;
-            color: #C0C0C0;
-            white-space: pre;
-        }
-
-        #graph-container p {
-            color: #888;
-            white-space: pre-wrap;
-        }
-
-        .mbti-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 1rem;
-            background-color: #1C1E25;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 1rem;
-        }
-
-        .mbti-option {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .mbti-option input[type="checkbox"] {
-            width: auto;
-            margin-bottom: 0;
-        }
-
-        .mbti-option label {
-            margin-bottom: 0;
-            font-weight: normal;
-        }
-
-        #results-container pre,
-        #hidden-outputs-container pre,
-        #papers-container pre,
-        #code-result-container pre,
-        #modules-container pre {
-            background-color: #000;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            color: #FAFAFA;
-        }
-
-        .header-with-button {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--secondary-color);
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .header-with-button h2,
-        .header-with-button h3 {
-            border-bottom: none;
-            padding-bottom: 0;
-            margin: 0;
-        }
-
-        #download-log-button,
-        .download-paper-button,
-        #export-qnn-button {
-            width: auto;
-            padding: 0.5rem 1rem;
-            margin-bottom: 0;
-            font-size: 0.9rem;
-            background-color: var(--secondary-color);
-        }
-
-        #download-log-button:hover:not(:disabled),
-        .download-paper-button:hover:not(:disabled),
-        #export-qnn-button:hover:not(:disabled) {
-            background-color: #3a3b44;
-        }
-
-        .chat-messages {
-            height: 400px;
-            background-color: #000;
-            border: 1px solid var(--secondary-color);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            margin-bottom: 1rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .chat-message {
-            padding: 0.75rem 1rem;
-            border-radius: var(--border-radius);
-            max-width: 80%;
-            line-height: 1.5;
-            word-wrap: break-word;
-        }
-
-        .user-message {
-            background-color: var(--accent-color);
-            color: var(--text-color);
-            align-self: flex-end;
-            border-bottom-right-radius: 0;
-        }
-
-        .ai-message {
-            background-color: var(--secondary-color);
-            color: var(--text-color);
-            align-self: flex-start;
-            border-bottom-left-radius: 0;
-            white-space: pre-wrap;
-        }
-
-        #diagnostic-chat-form {
-            display: flex;
-            gap: 1rem;
-        }
-
-        #diagnostic-chat-input {
-            flex-grow: 1;
-            min-height: 50px;
-            height: 50px;
-            margin-bottom: 0;
-            resize: none;
-        }
-
-        #diagnostic-chat-send-button {
-            width: auto;
-            margin-bottom: 0;
-            align-self: flex-end;
-        }
-
-
-
-        #diagnostic-chat-container {
-            border: 2px solid #007bff;
-        }
-
-        #diagnostic-chat-container h2 {
-            color: #00aaff;
-            border-bottom-color: #007bff;
-        }
-
-        .diagnostic-ai-message {
-            background-color: #1c2e4a;
-            color: #e0e0ff;
-            align-self: flex-start;
-            border-bottom-left-radius: 0;
-            white-space: pre-wrap;
-        }
-
-        .diagnostic-user-message {
-            background-color: #0056b3;
-            color: var(--text-color);
-            align-self: flex-end;
-            border-bottom-right-radius: 0;
-        }
-
-        .qnn-import-section {
-            border: 2px dashed var(--accent-color);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .qnn-import-section label {
-            cursor: pointer;
-            background-color: var(--secondary-color);
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
-            display: inline-block;
-            margin-bottom: 1rem;
-        }
-
-        .qnn-import-section input[type="file"] {
-            display: none;
-        }
-
-        #imported-qnn-info {
-            background-color: #1c2e4a;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            margin-top: 1rem;
-            text-align: left;
-        }
-
-        #inference-options {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 1rem;
-        }
-
-        #inference-options button {
-            background-color: #007bff;
-            width: 50%;
-        }
-
-        #inference-options button:hover:not(:disabled) {
-            background-color: #0056b3;
-        }
-
-        /* Mode Tabs */
-        .mode-tabs {
-            display: flex;
-            gap: 0;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid var(--secondary-color);
-        }
-
-        .mode-tab {
-            padding: 1rem 2rem;
-            background: transparent;
-            border: none;
-            color: #888;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
-        }
-
-        .mode-tab:hover {
-            color: var(--text-color);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .mode-tab.active {
-            color: var(--accent-color);
-            border-bottom-color: var(--accent-color);
-        }
-
-        /* Settings Panel */
-        .settings-panel {
-            background: linear-gradient(145deg, #1a1d24, #22252e);
-            border: 1px solid var(--secondary-color);
-            padding: 1rem 1.5rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .settings-panel label {
-            margin: 0;
-            font-weight: 600;
-            color: #aaa;
-        }
-
-        .settings-panel input {
-            flex: 1;
-            min-width: 200px;
-            margin: 0;
-        }
-
-        .settings-panel button {
-            width: auto;
-            padding: 0.5rem 1.5rem;
-            margin: 0;
-        }
-
-        .api-key-status {
-            color: #28a745;
-            font-size: 0.9rem;
-        }
-
-        .mem-calc-panel {
-            margin-bottom: 1rem;
-            padding: 12px 14px;
-            background: #141820;
-            border: 1px solid #333;
-            border-radius: 8px;
-            font-size: 0.85rem;
-        }
-
-        .mem-calc-header {
-            font-weight: 600;
-            color: #ccc;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .mem-calc-badge {
-            font-size: 0.7rem;
-            font-weight: 500;
-            color: #888;
-            background: #222;
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-
-        .mem-calc-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-
-        .mem-calc-stat {
-            background: #1a1d24;
-            padding: 8px 10px;
-            border-radius: 6px;
-            border: 1px solid #2a2d35;
-        }
-
-        .mem-calc-label {
-            display: block;
-            color: #888;
-            font-size: 0.75rem;
-            margin-bottom: 2px;
-        }
-
-        .mem-calc-value {
-            color: #ddd;
-        }
-
-        .mem-calc-fit {
-            padding: 8px 10px;
-            background: #1a1d24;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            line-height: 1.5;
-        }
-
-        .mem-calc-hint {
-            font-size: 0.8rem;
-            color: #ffaa66;
-        }
-
-        .mem-calc-details summary {
-            cursor: pointer;
-            color: #aaa;
-            font-size: 0.8rem;
-            margin-bottom: 6px;
-        }
-
-        .mem-calc-note {
-            color: #777;
-            font-size: 0.75rem;
-            margin: 6px 0;
-            line-height: 1.4;
-        }
-
-        .mem-calc-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.78rem;
-            margin: 6px 0;
-        }
-
-        .mem-calc-table th,
-        .mem-calc-table td {
-            text-align: left;
-            padding: 4px 8px;
-            border-bottom: 1px solid #333;
-            color: #bbb;
-        }
-
-        .mem-calc-ram-input {
-            width: 70px !important;
-            padding: 4px 6px !important;
-            margin: 0 4px !important;
-            font-size: 0.85rem !important;
-            display: inline-block !important;
-        }
-
-        .topology-controls {
-            margin-bottom: 12px;
-            padding: 10px;
-            background: #1a1d24;
-            border-radius: 6px;
-            border: 1px solid #333;
-        }
-
-        /* Brainstorming Mode */
-        /* Mode Containers */
-        /* .container display: block; REMOVED to avoid conflicts */
-
-        .brainstorm-container,
-        .algorithm-container,
-        .distillation-container {
-            display: none;
-        }
-
-        .brainstorm-container.active,
-        .algorithm-container.active,
-        .distillation-container.active {
-            display: block;
-        }
-
-        /* Utility class to force hide */
-        .hidden {
-            display: none !important;
-        }
-
-        .expert-panel {
-            background: linear-gradient(145deg, #1c2030, #252a38);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .expert-panel h3 {
-            margin: 0 0 0.75rem 0;
-            color: var(--accent-color);
-            border-bottom: none;
-        }
-
-        .expert-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-
-        .expert-badge {
-            background: rgba(255, 255, 255, 0.08);
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .expert-badge .specialty {
-            color: #888;
-            font-size: 0.75rem;
-        }
-
-        .brainstorm-chat {
-            background: #000;
-            border: 1px solid var(--secondary-color);
-            border-radius: var(--border-radius);
-            height: 450px;
-            overflow-y: auto;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .expert-message {
-            background: linear-gradient(145deg, #1a2940, #1e3355);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            border-left: 3px solid #007bff;
-        }
-
-        .expert-message-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-
-        .expert-message-header .specialty {
-            color: #888;
-            font-weight: normal;
-            font-size: 0.85rem;
-        }
-
-        .synthesis-message {
-            background: linear-gradient(145deg, #2d3a2d, #354535);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            border-left: 3px solid #28a745;
-        }
-
-        .synthesis-message-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #28a745;
-        }
-
-        .thinking-indicator {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #888;
-            font-style: italic;
-        }
-
-        .thinking-dots {
-            display: inline-flex;
-            gap: 2px;
-        }
-
-        .thinking-dots span {
-            width: 6px;
-            height: 6px;
-            background: var(--accent-color);
-            border-radius: 50%;
-            animation: thinking 1.4s ease-in-out infinite;
-        }
-
-        .thinking-dots span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .thinking-dots span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes thinking {
-
-            0%,
-            80%,
-            100% {
-                opacity: 0.3;
-                transform: scale(0.8);
-            }
-
-            40% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .brainstorm-input-form {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .brainstorm-input-form textarea {
-            flex: 1;
-            min-height: 60px;
-            margin: 0;
-            resize: none;
-        }
-
-        .brainstorm-input-form button {
-            width: auto;
-            align-self: flex-end;
-        }
-    </style>
+    <link rel="stylesheet" href="css/theme.css">
 </head>
 
 <body>
@@ -701,45 +19,37 @@
 
     <!-- Settings Panel -->
     <div class="container">
-        <div class="settings-panel" style="flex-wrap: wrap;">
-            <label for="llm-provider">🤖 LLM Provider:</label>
-            <select id="llm-provider"
-                style="padding: 0.5rem; border-radius: 4px; background: #1a1d24; color: #fff; border: 1px solid #333;">
+        <div class="settings-panel">
+            <label for="llm-provider">🤖 LLM Provider</label>
+            <select id="llm-provider">
                 <option value="openrouter">OpenRouter</option>
                 <option value="llamacpp">LlamaCpp Server</option>
             </select>
 
-            <div id="openrouter-config" style="display: none; gap: 0.5rem; align-items: center;">
-                <label for="openrouter-api-key">🔗 API Key:</label>
-                <input type="password" id="openrouter-api-key" placeholder="OpenRouter API key..."
-                    style="min-width: 180px;">
-                <label for="openrouter-model">📦 Model:</label>
-                <input type="text" id="openrouter-model" value="stepfun/step-3.5-flash:free" placeholder="model-name"
-                    style="min-width: 200px;">
+            <div id="openrouter-config" class="provider-config">
+                <label for="openrouter-api-key">🔗 API Key</label>
+                <input type="password" id="openrouter-api-key" placeholder="OpenRouter API key...">
+                <label for="openrouter-model">📦 Model</label>
+                <input type="text" id="openrouter-model" value="stepfun/step-3.5-flash:free" placeholder="model-name">
             </div>
 
-            <div id="llamacpp-config" style="display: none; gap: 0.5rem; align-items: center;">
-                <label for="llamacpp-url">🔗 Server URL:</label>
-                <input type="text" id="llamacpp-url" value="http://localhost:8080/v1"
-                    placeholder="http://localhost:8080/v1" style="min-width: 320px;">
-                <label for="llamacpp-embedding-url">🧠 Embedding URL:</label>
-                <input type="text" id="llamacpp-embedding-url" value="http://localhost:8080/v1"
-                    placeholder="http://localhost:8080/v1" style="min-width: 320px;">
-                <label for="llamacpp-model">🧠 Model:</label>
-                <input type="text" id="llamacpp-model" value="llama-3.2-1b-instruct" placeholder="model name" style="min-width: 180px;">
+            <div id="llamacpp-config" class="provider-config">
+                <label for="llamacpp-url">🔗 Server URL</label>
+                <input type="text" id="llamacpp-url" value="http://localhost:8080/v1" placeholder="http://localhost:8080/v1">
+                <label for="llamacpp-embedding-url">🧠 Embedding URL</label>
+                <input type="text" id="llamacpp-embedding-url" value="http://localhost:8080/v1" placeholder="http://localhost:8080/v1">
+                <label for="llamacpp-model">🧠 Model</label>
+                <input type="text" id="llamacpp-model" value="llama-3.2-1b-instruct" placeholder="model name">
             </div>
 
-            <!-- Per-synthesis and per-agent model controls (work with OpenRouter or LlamaCpp) -->
-            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; width: 100%;">
-                <label for="synthesis-model" style="font-size: 0.85rem; color: #aaa;">Synthesis Model:</label>
-                <input type="text" id="synthesis-model" placeholder="(optional, separate for final synth)" style="width: 160px; padding: 4px; font-size: 0.85rem;">
-                <label for="agent-models" style="font-size: 0.85rem; color: #aaa;">Per-Agent Models (comma-sep, cycles):</label>
-                <input type="text" id="agent-models" placeholder="e.g. model-a,model-b (for different agents)" style="width: 200px; padding: 4px; font-size: 0.85rem;">
+            <div class="provider-models-row">
+                <label for="synthesis-model">Synthesis Model</label>
+                <input type="text" id="synthesis-model" placeholder="(optional, separate for final synth)">
+                <label for="agent-models">Per-Agent Models</label>
+                <input type="text" id="agent-models" placeholder="e.g. model-a,model-b (cycles)">
             </div>
 
-
-
-            <button type="button" id="save-api-key-btn">Save</button>
+            <button type="button" id="save-api-key-btn" class="flux-btn flux-btn--primary">Save</button>
             <span id="api-key-status" class="api-key-status"></span>
         </div>
     </div>
@@ -757,18 +67,16 @@
     <!-- Knowledge Distillation Mode Container -->
     <div class="container distillation-container hidden" id="distillation-mode">
         <div class="section">
-            <h2 style="color: #0f0; border-bottom-color: #0f0;">⚗️ Knowledge Distillation Graph</h2>
+            <h2 class="distil-section-title">⚗️ Knowledge Distillation Graph</h2>
             <form id="distillation-form">
                 <label for="distil-topics">Topics (comma separated):</label>
                 <input type="text" id="distil-topics"
                     placeholder="e.g. Artificial Intelligence, Neuroscience, Philosophy" required>
 
                 <div id="anchors-container">
-                    <div class="anchor-item section"
-                        style="background: rgba(255,255,255,0.05); padding: 1rem; margin-bottom: 1rem; border: 1px solid #444;">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <h4 style="margin: 0; color: #0f0;">⚓ Anchor 1</h4>
+                    <div class="anchor-item section">
+                        <div class="anchor-item__header">
+                            <h4>⚓ Anchor 1</h4>
                         </div>
                         <label>Anchor Question:</label>
                         <textarea class="distil-anchor" placeholder="Enter the grand objective or anchor question..."
@@ -779,58 +87,42 @@
                     </div>
                 </div>
 
-                <button type="button" id="add-anchor-btn"
-                    style="background-color: #444; margin-bottom: 1.5rem; width: auto; padding: 0.5rem 1rem;">+ Add
-                    Another Anchor</button>
+                <button type="button" id="add-anchor-btn" class="app-btn--secondary" style="margin-bottom: 1.5rem; width: auto;">+ Add Another Anchor</button>
 
-                <div style="display: flex; align-items: center; gap: 8px; margin: 10px 0;">
+                <div class="app-control-group" style="margin: 0.75rem 0;">
                     <input type="checkbox" id="distil-debug-mode">
-                    <label for="distil-debug-mode" style="color: #aaa; cursor: pointer; font-size: 0.9rem;">
-                        🚀 Debug Mode (Mock Data & Fast Epochs)
-                    </label>
+                    <label for="distil-debug-mode">🚀 Debug Mode (Mock Data & Fast Epochs)</label>
                 </div>
 
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button type="submit" id="start-distillation-btn" style="background-color: #28a745;">Start
-                        Distillation</button>
-                    <button type="button" id="stop-distillation-btn" style="background-color: #dc3545; display: none;"
-                        onclick="stopDistillation()">⏹ Stop</button>
-                    <button type="button" id="download-distillation-btn"
-                        style="background-color: #007bff; display: none;"
-                        onclick="window.open('/download_distillation','_blank')">⬇ Download Dataset</button>
+                <div class="app-action-row">
+                    <button type="submit" id="start-distillation-btn" class="app-btn--success" style="width: auto;">Start Distillation</button>
+                    <button type="button" id="stop-distillation-btn" class="app-btn--danger hidden" style="width: auto;" onclick="stopDistillation()">⏹ Stop</button>
+                    <button type="button" id="download-distillation-btn" class="app-btn--secondary hidden" style="width: auto;" onclick="window.open('/download_distillation','_blank')">⬇ Download Dataset</button>
                 </div>
             </form>
 
-            <!-- Token Counter Bar -->
-            <div id="distil-token-bar" style="margin-top: 10px; display: none;">
-                <div
-                    style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #aaa; margin-bottom: 4px;">
+            <div id="distil-token-bar" class="hidden" style="margin-top: 1rem;">
+                <div class="app-progress-meta">
                     <span id="distil-token-info">0 / 1,000,000 tokens</span>
                     <span id="distil-epoch-info">Epoch: 0</span>
                     <span id="distil-qa-info">QA Pairs: 0</span>
                 </div>
-                <div style="width: 100%; background: #333; border-radius: 4px; height: 8px;">
-                    <div id="distil-progress"
-                        style="width: 0%; background: linear-gradient(90deg, #0f0, #0a0); height: 100%; border-radius: 4px; transition: width 0.3s;">
-                    </div>
+                <div class="app-progress">
+                    <div id="distil-progress" class="app-progress__fill" style="width: 0%;"></div>
                 </div>
             </div>
         </div>
 
         <div class="section">
             <h3>Topology & Metrics</h3>
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 300px;">
-                    <h4 style="margin-top:0;">ASCII Topology (1×2×2×2×2×2×1)</h4>
-                    <div id="distil-topology"
-                        style="min-height: 300px; background: #000; padding: 10px; font-family: monospace; white-space: pre; font-size: 0.75rem; overflow: auto; border: 1px solid #333; color: #00ff00; line-height: 1.4;">
-                        Waiting for data...</div>
+            <div class="app-split">
+                <div class="app-split__pane">
+                    <h4>ASCII Topology (1×2×2×2×2×2×1)</h4>
+                    <div id="distil-topology">Waiting for data...</div>
                 </div>
-                <div style="flex: 1; min-width: 300px;">
-                    <h4 style="margin-top:0;">Distillation Console</h4>
-                    <div id="distil-console"
-                        style="min-height: 300px; max-height: 400px; background: #0a0a0a; padding: 10px; font-family: monospace; font-size: 0.75rem; overflow-y: auto; border: 1px solid #333; color: #0f0;">
-                        Waiting for distillation to start...</div>
+                <div class="app-split__pane">
+                    <h4>Distillation Console</h4>
+                    <div id="distil-console">Waiting for distillation to start...</div>
                 </div>
             </div>
         </div>
@@ -840,81 +132,67 @@
     <div class="container brainstorm-container hidden" id="brainstorm-mode">
         <!-- ... existing brainstorm content ... -->
         <div class="section">
-            <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 5px;">
-                    <label for="brainstorm_epochs" style="color: #aaa; font-size: 0.9rem;">Epochs:</label>
-                    <input type="number" id="brainstorm_epochs" value="2" min="1" max="10"
-                        style="width: 50px; padding: 4px; border-radius: 4px; border: 1px solid #444; background: #222; color: #eee;">
+            <div class="app-control-row">
+                <div class="app-control-group">
+                    <label for="brainstorm_epochs">Epochs</label>
+                    <input type="number" id="brainstorm_epochs" class="app-input--compact app-input--narrow" value="2" min="1" max="10">
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="app-control-group">
                     <input type="checkbox" id="brainstorm_debug_mode">
-                    <label for="brainstorm_debug_mode" style="color: #aaa; cursor: pointer; font-size: 0.9rem;">🚀
-                        Simulation Mode (Mock LLM - No Cost)</label>
+                    <label for="brainstorm_debug_mode">🚀 Simulation Mode (Mock LLM — No Cost)</label>
                 </div>
             </div>
 
-            <!-- QNN Size Mode: Auto (small) or Manual/Massive at user request -->
-            <div style="margin-bottom: 12px; padding: 10px; background: #1a1d24; border-radius: 6px; border: 1px solid #333;">
-                <div style="color: #aaa; font-size: 0.85rem; margin-bottom: 6px; font-weight: 500;">QNN Topology Mode:</div>
-                <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
-                    <label style="font-size: 0.85rem; color: #ddd; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+            <div class="app-subpanel">
+                <div class="app-subpanel__title">QNN Topology Mode</div>
+                <div class="app-radio-group">
+                    <label class="app-radio-label">
                         <input type="radio" name="qnn_size_mode" value="auto" checked id="qnn_auto">
-                        <span>Auto (recommended small 2-5 layers/width)</span>
+                        <span>Auto (recommended small 2–5 layers/width)</span>
                     </label>
-                    <label style="font-size: 0.85rem; color: #ffcc66; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                    <label class="app-radio-label app-radio-label--warn">
                         <input type="radio" name="qnn_size_mode" value="manual" id="qnn_manual">
-                        <span>Manual / Massive (spawn huge QNN at your request)</span>
+                        <span>Manual / Massive</span>
                     </label>
                 </div>
-                <div id="manual-qnn-controls" style="display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #444; gap: 12px; align-items: center; flex-wrap: wrap;">
-                    <label style="color: #aaa; font-size: 0.8rem;">Layers (depth):
-                        <input type="number" id="manual_layers" value="20" min="1" step="1"
-                            style="width: 80px; padding: 3px 6px; font-size: 0.85rem; border: 1px solid #555; background: #111; color: #eee;">
+                <div id="manual-qnn-controls" class="app-divider hidden" style="gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                    <label class="app-hint">Layers (depth):
+                        <input type="number" id="manual_layers" class="app-input--compact app-input--medium" value="20" min="1" step="1">
                     </label>
-                    <label style="color: #aaa; font-size: 0.8rem;">Width (agents per layer):
-                        <input type="number" id="manual_width" value="20" min="1" step="1"
-                            style="width: 80px; padding: 3px 6px; font-size: 0.85rem; border: 1px solid #555; background: #111; color: #eee;">
+                    <label class="app-hint">Width (agents per layer):
+                        <input type="number" id="manual_width" class="app-input--compact app-input--medium" value="20" min="1" step="1">
                     </label>
-                    <span style="color: #ff8888; font-size: 0.75rem; max-width: 280px;">⚠️ Unlimited dimensions — massive QNNs use lots of RAM, tokens, time, and cost</span>
+                    <span class="app-hint app-hint--danger">⚠️ Unlimited dimensions — massive QNNs use lots of RAM, tokens, time, and cost</span>
                 </div>
             </div>
 
             <div class="mem-calc-panel" id="brainstorm-mem-calc"
                 data-watch="manual_layers,manual_width,brainstorm_epochs,brainstorm-ram-gb">
-                <div style="margin-bottom: 8px; color: #aaa; font-size: 0.8rem;">
+                <div class="app-hint" style="margin-bottom: 0.5rem;">
                     Laptop RAM:
                     <input type="number" id="brainstorm-ram-gb" class="mem-calc-ram-input" value="8" min="1" max="256" step="1"> GB
                 </div>
             </div>
 
-            <!-- Attachments Section -->
-            <div id="attachments-section"
-                style="margin-bottom: 15px; padding: 1rem; background: #1a1d24; border-radius: 8px; border: 1px dashed #444;">
-                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    <label for="pdf-file-input"
-                        style="cursor: pointer; background: #262730; padding: 8px 16px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; width: auto;">
-                        📄 Attach PDFs
-                    </label>
+            <div id="attachments-section" class="app-attachments">
+                <div class="app-attachments__row">
+                    <label for="pdf-file-input" class="app-file-label">📄 Attach PDFs</label>
                     <input type="file" id="pdf-file-input" accept=".pdf" multiple style="display: none;">
-                    <label for="code-file-input"
-                        style="cursor: pointer; background: #262730; padding: 8px 16px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; width: auto;">
-                        💻 Attach Code
-                    </label>
+                    <label for="code-file-input" class="app-file-label">💻 Attach Code</label>
                     <input type="file" id="code-file-input"
                         accept=".py,.js,.ts,.jsx,.tsx,.java,.c,.cpp,.h,.hpp,.go,.rs,.rb,.php,.sh,.bash,.sql,.html,.css,.json,.yaml,.yml,.toml,.md,.txt,.xml,.vue,.svelte,.kt,.swift,.r,.scala,.lua,.pl,.zig,.cs,.m,.mm,.ipynb"
                         multiple style="display: none;">
-                    <span id="attachment-upload-status" style="color: #888; font-size: 0.85rem;"></span>
-                    <button type="button" id="clear-attachments-btn"
-                        style="display: none; background: #444; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; width: auto;">Clear
-                        All</button>
+                    <span id="attachment-upload-status" class="app-status"></span>
+                    <button type="button" id="clear-attachments-btn" class="app-btn--ghost hidden">Clear All</button>
                 </div>
-                <div id="attached-files-list" style="margin-top: 10px; display: none;">
-                    <div style="font-size: 0.85rem; color: #888; margin-bottom: 6px;">Attached Files:</div>
-                    <div id="files-list" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                <div id="attached-files-list" class="hidden" style="margin-top: 0.75rem;">
+                    <div class="app-hint" style="margin-bottom: 0.4rem;">Attached Files</div>
+                    <div id="files-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
                 </div>
             </div>
+        </div>
 
-            <!-- NodeChat Mount Point -->
+        <div class="section section--chat-mount">
             <div id="node-chat-container" style="height: 550px;"></div>
         </div>
     </div>
@@ -946,7 +224,7 @@
             <div id="graph-architecture" class="section">
                 <h2>Graph Architecture</h2>
                 <form id="graph-params-form">
-                    <div id="debug-options" style="display: flex; gap: 2rem; margin-bottom: 1rem; margin-top: 0.5rem;">
+                    <div id="debug-options" class="app-control-row" style="margin-top: 0.5rem;">
                         <div class="mbti-option">
                             <input type="checkbox" id="coder_debug_mode" name="coder_debug_mode" value="true">
                             <label for="coder_debug_mode">💻 Enable Coder Debug (Code)</label>
@@ -954,33 +232,32 @@
                     </div>
 
                     <div class="topology-controls">
-                        <div style="color: #aaa; font-size: 0.85rem; margin-bottom: 6px; font-weight: 500;">QNN Dimensions (unlimited):</div>
-                        <label for="cot_trace_depth">CoT trace depth (layers / height):</label>
+                        <div class="app-subpanel__title">QNN Dimensions (unlimited)</div>
+                        <label for="cot_trace_depth">CoT trace depth (layers / height)</label>
                         <input type="number" id="cot_trace_depth" name="cot_trace_depth" value="2" min="1" required>
 
-                        <div style="margin-top: 8px; color: #aaa; font-size: 0.85rem; margin-bottom: 4px;">Width (agents per layer):</div>
-                        <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 8px;">
-                            <label style="font-size: 0.85rem; color: #ddd; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                        <div class="app-subpanel__title" style="margin-top: 0.75rem;">Width (agents per layer)</div>
+                        <div class="app-radio-group" style="margin-bottom: 0.5rem;">
+                            <label class="app-radio-label">
                                 <input type="radio" name="algorithm_width_mode" value="mbti" checked id="algo_width_mbti">
                                 <span>From MBTI selection (below)</span>
                             </label>
-                            <label style="font-size: 0.85rem; color: #ffcc66; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <label class="app-radio-label app-radio-label--warn">
                                 <input type="radio" name="algorithm_width_mode" value="manual" id="algo_width_manual">
                                 <span>Manual width (unlimited)</span>
                             </label>
                         </div>
-                        <div id="algo-manual-width-control" style="display: none;">
-                            <label for="algorithm_manual_width" style="color: #aaa; font-size: 0.85rem;">Agents per layer:
-                                <input type="number" id="algorithm_manual_width" name="algorithm_manual_width" value="16" min="1" step="1"
-                                    style="width: 90px; padding: 4px 6px; font-size: 0.85rem; border: 1px solid #555; background: #111; color: #eee;">
+                        <div id="algo-manual-width-control" class="hidden">
+                            <label for="algorithm_manual_width" class="app-hint">Agents per layer:
+                                <input type="number" id="algorithm_manual_width" name="algorithm_manual_width" class="app-input--compact app-input--medium" value="16" min="1" step="1">
                             </label>
-                            <span style="color: #888; font-size: 0.75rem; display: block; margin-top: 4px;">MBTI archetypes cycle when width exceeds selection count.</span>
+                            <span class="app-hint" style="display: block; margin-top: 0.35rem;">MBTI archetypes cycle when width exceeds selection count.</span>
                         </div>
                     </div>
 
                     <div class="mem-calc-panel" id="algorithm-mem-calc"
                         data-watch="cot_trace_depth,algorithm_manual_width,num_epochs,algorithm-ram-gb">
-                        <div style="margin-bottom: 8px; color: #aaa; font-size: 0.8rem;">
+                        <div class="app-hint" style="margin-bottom: 0.5rem;">
                             Laptop RAM:
                             <input type="number" id="algorithm-ram-gb" class="mem-calc-ram-input" value="8" min="1" max="256" step="1"> GB
                         </div>
@@ -1035,24 +312,18 @@
                         <div class="mbti-option"><input type="checkbox" id="mbti-entj" name="mbti_archetypes"
                                 value="ENTJ"><label for="mbti-entj">ENTJ (Commander)</label></div>
                     </div>
-                    <div id="algorithm-attachments-section"
-                        style="margin-bottom: 12px; padding: 1rem; background: #1a1d24; border-radius: 8px; border: 1px dashed #444;">
-                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                            <label for="algorithm-code-file-input"
-                                style="cursor: pointer; background: #262730; padding: 8px 16px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; width: auto;">
-                                💻 Attach Code
-                            </label>
+                    <div id="algorithm-attachments-section" class="app-attachments">
+                        <div class="app-attachments__row">
+                            <label for="algorithm-code-file-input" class="app-file-label">💻 Attach Code</label>
                             <input type="file" id="algorithm-code-file-input"
                                 accept=".py,.js,.ts,.jsx,.tsx,.java,.c,.cpp,.h,.hpp,.go,.rs,.rb,.php,.sh,.bash,.sql,.html,.css,.json,.yaml,.yml,.toml,.md,.txt,.xml,.vue,.svelte,.kt,.swift,.r,.scala,.lua,.pl,.zig,.cs,.m,.mm,.ipynb"
                                 multiple style="display: none;">
-                            <span id="algorithm-attachment-status" style="color: #888; font-size: 0.85rem;"></span>
-                            <button type="button" id="clear-algorithm-attachments-btn"
-                                style="display: none; background: #444; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; width: auto;">Clear
-                                All</button>
+                            <span id="algorithm-attachment-status" class="app-status"></span>
+                            <button type="button" id="clear-algorithm-attachments-btn" class="app-btn--ghost hidden">Clear All</button>
                         </div>
-                        <div id="algorithm-attached-files-list" style="margin-top: 10px; display: none;">
-                            <div style="font-size: 0.85rem; color: #888; margin-bottom: 6px;">Attached Code Files:</div>
-                            <div id="algorithm-files-list" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                        <div id="algorithm-attached-files-list" class="hidden" style="margin-top: 0.75rem;">
+                            <div class="app-hint" style="margin-bottom: 0.4rem;">Attached Code Files</div>
+                            <div id="algorithm-files-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
                         </div>
                     </div>
                     <label for="prompt">Prompt:</label>
@@ -1063,12 +334,12 @@
 
 
                 </textarea>
-                    <button type="submit" id="run-button">Build and Run Graph</button>
+                    <button type="submit" id="run-button" class="flux-btn flux-btn--primary" style="width: 100%;">Build and Run Graph</button>
                 </form>
             </div>
         </div>
 
-        <div class="container" id="diagnostic-chat-wrapper">
+        <div class="container section--chat-mount" id="diagnostic-chat-wrapper">
             <div id="diagnostic-node-chat-container" style="height: 600px;"></div>
         </div>
 
@@ -1090,7 +361,7 @@
             <div id="modules-output"></div>
         </div>
 
-        <button id="export-qnn-button" class="hidden">Export QNN</button>
+        <button id="export-qnn-button" class="app-btn--secondary hidden">Export QNN</button>
     </div>
     </div>
     <!-- End Algorithm Design Mode Container -->
@@ -1101,23 +372,21 @@
         <canvas id="perplexityChart"></canvas>
     </div>
 
-    <div class="container" id="log-wrapper">
+    <div class="container section" id="log-wrapper">
         <div class="header-with-button">
             <h2>Real-time Graph Activity</h2>
-            <div id="token-display"
-                style="background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 4px; font-family: monospace; font-size: 0.9rem; color: #aaa; border: 1px solid #333; display: flex; gap: 10px;">
-                <span>Total: <b id="tokens-total" style="color: #fff;">0</b></span>
-                <span style="font-size: 0.8em; color: #777;">(In: <span id="tokens-prompt">0</span> Out: <span
-                        id="tokens-completion">0</span>)</span>
+            <div id="token-display" class="app-token-display">
+                <span>Total: <b id="tokens-total">0</b></span>
+                <span class="app-token-display__sub">(In: <span id="tokens-prompt">0</span> Out: <span id="tokens-completion">0</span>)</span>
             </div>
-            <button id="download-log-button" disabled>Download Full Log</button>
+            <button id="download-log-button" class="app-btn--secondary" disabled>Download Full Log</button>
         </div>
-        <div id="log-container"></div>
+        <div id="log-container" class="nc-custom-scrollbar"></div>
     </div>
 
-    <div class="container" id="graph-wrapper">
+    <div class="container section" id="graph-wrapper">
         <h2>Graph Visualization</h2>
-        <div id="graph-container">
+        <div id="graph-container" class="nc-custom-scrollbar">
             <p>ASCII graph will be displayed here after the process starts...</p>
         </div>
     </div>
@@ -1126,6 +395,25 @@
     <script src="js/components/memory-calculator.js"></script>
     <script src="js/components/node-chat.js"></script>
     <script>
+        const APP_COLORS = {
+            user: '#a78bfa',
+            success: '#34d399',
+            warn: '#fbbf24',
+            error: '#ef4444',
+            info: '#06b6d4',
+        };
+
+        function setAppStatus(el, type) {
+            if (!el) return;
+            el.classList.remove('app-status--success', 'app-status--warn', 'app-status--error');
+            if (type) el.classList.add(`app-status--${type}`);
+        }
+
+        function toggleHidden(el, show) {
+            if (!el) return;
+            el.classList.toggle('hidden', !show);
+        }
+
         const graphParamsForm = document.getElementById('graph-params-form');
         const runButton = document.getElementById('run-button');
         const logContainer = document.getElementById('log-container');
@@ -1176,7 +464,10 @@
                 container.textContent = text;
             }
 
-            if (options.color) container.style.color = options.color;
+            if (options.color) {
+                const colorMap = { red: APP_COLORS.error, cyan: APP_COLORS.info, lime: APP_COLORS.success };
+                container.style.color = colorMap[options.color] || options.color;
+            }
 
             logContainer.appendChild(container);
             logContainer.scrollTop = logContainer.scrollHeight;
@@ -1209,21 +500,26 @@
                     datasets: [{
                         label: 'Average Agent Perplexity',
                         data: data,
-                        borderColor: 'rgba(255, 75, 75, 1)',
-                        backgroundColor: 'rgba(255, 75, 75, 0.2)',
+                        borderColor: 'rgba(139, 92, 246, 1)',
+                        backgroundColor: 'rgba(139, 92, 246, 0.12)',
                         fill: true,
                         tension: 0.1
                     }]
                 },
                 options: {
                     responsive: true,
+                    plugins: { legend: { labels: { color: 'rgba(255,255,255,0.6)' } } },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            title: { display: true, text: 'Perplexity Score' }
+                            title: { display: true, text: 'Perplexity Score', color: 'rgba(255,255,255,0.45)' },
+                            ticks: { color: 'rgba(255,255,255,0.35)' },
+                            grid: { color: 'rgba(255,255,255,0.06)' }
                         },
                         x: {
-                            title: { display: true, text: 'Step' }
+                            title: { display: true, text: 'Step', color: 'rgba(255,255,255,0.45)' },
+                            ticks: { color: 'rgba(255,255,255,0.35)' },
+                            grid: { color: 'rgba(255,255,255,0.06)' }
                         }
                     }
                 }
@@ -1351,11 +647,10 @@
                 const anchorCount = anchorsContainer.querySelectorAll('.anchor-item').length + 1;
                 const anchorItem = document.createElement('div');
                 anchorItem.className = 'anchor-item section';
-                anchorItem.style.cssText = 'background: rgba(255,255,255,0.05); padding: 1rem; margin-bottom: 1rem; border: 1px solid #444;';
                 anchorItem.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <h4 style="margin: 0; color: #0f0;">⚓ Anchor ${anchorCount}</h4>
-                        <button type="button" class="remove-anchor-btn" style="width: auto; padding: 2px 8px; background: #dc3545; margin: 0;">&times;</button>
+                    <div class="anchor-item__header">
+                        <h4>⚓ Anchor ${anchorCount}</h4>
+                        <button type="button" class="remove-anchor-btn">&times;</button>
                     </div>
                     <label>Anchor Question:</label>
                     <textarea class="distil-anchor" placeholder="Enter the grand objective or anchor question..."
@@ -1418,10 +713,10 @@
 
                 startBtn.disabled = true;
                 startBtn.textContent = "Running...";
-                stopBtn.style.display = '';
-                downloadBtn.style.display = 'none';
-                tokenBar.style.display = '';
-                distilConsole.innerHTML = `<div style="color:cyan;">--- Distillation Started (${anchors.length} anchors, Debug: ${debugMode}, Provider: ${provider}) ---</div>`;
+                toggleHidden(stopBtn, true);
+                toggleHidden(downloadBtn, false);
+                toggleHidden(tokenBar, true);
+                distilConsole.innerHTML = `<div class="app-console-line--info">--- Distillation Started (${anchors.length} anchors, Debug: ${debugMode}, Provider: ${provider}) ---</div>`;
                 resetPerplexityChart();
 
                 try {
@@ -1453,7 +748,7 @@
                     alert("Error starting distillation: " + e.message);
                     startBtn.disabled = false;
                     startBtn.textContent = "Start Distillation";
-                    stopBtn.style.display = 'none';
+                    toggleHidden(stopBtn, false);
                 }
             });
         }
@@ -1465,7 +760,7 @@
             if (!el) return;
             const line = document.createElement('div');
             line.textContent = msg;
-            line.style.color = color || '#0f0';
+            line.style.color = color || APP_COLORS.success;
             el.appendChild(line);
             el.scrollTop = el.scrollHeight;
         }
@@ -1555,7 +850,7 @@
         async function stopDistillation() {
             try {
                 await fetch('/stop_distillation', { method: 'POST' });
-                appendDistilConsole('⏹ Stop requested...', '#ff8800');
+                appendDistilConsole('⏹ Stop requested...', APP_COLORS.warn);
                 if (window._distilEvtSource) {
                     window._distilEvtSource.close();
                     window._distilEvtSource = null;
@@ -1564,8 +859,8 @@
                 const stopBtn = document.getElementById('stop-distillation-btn');
                 const downloadBtn = document.getElementById('download-distillation-btn');
                 if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start Distillation'; }
-                if (stopBtn) stopBtn.style.display = 'none';
-                if (downloadBtn) downloadBtn.style.display = '';
+                if (stopBtn) toggleHidden(stopBtn, false);
+                if (downloadBtn) toggleHidden(downloadBtn, true);
             } catch (e) {
                 console.error('Failed to stop distillation:', e);
             }
@@ -1600,9 +895,9 @@
             container.innerHTML = '';
             items.forEach(item => {
                 const badge = document.createElement('span');
-                badge.style.cssText = 'background: #262730; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;';
+                badge.className = 'app-badge';
                 const icon = item.type === 'pdf' ? '📄' : '💻';
-                badge.innerHTML = `${icon} ${item.filename} <span style="color: #666;">(${item.char_count} chars)</span>`;
+                badge.innerHTML = `${icon} ${item.filename} <span class="app-badge__meta">(${item.char_count} chars)</span>`;
                 container.appendChild(badge);
             });
         }
@@ -1640,15 +935,15 @@
 
             if (addedCount > 0) {
                 attachmentUploadStatus.textContent = `✓ Added ${addedCount} new file(s). Total: ${allItems.length} (${totalChars} chars)`;
-                attachmentUploadStatus.style.color = '#28a745';
+                setAppStatus(attachmentUploadStatus, 'success');
             } else if (allItems.length > 0) {
                 attachmentUploadStatus.textContent = `⚠ Files already attached. Total: ${allItems.length}`;
-                attachmentUploadStatus.style.color = '#e0a800';
+                setAppStatus(attachmentUploadStatus, 'warn');
             }
 
             renderAttachmentBadges(filesList, allItems);
-            attachedFilesList.style.display = allItems.length ? 'block' : 'none';
-            clearAttachmentsBtn.style.display = allItems.length ? 'inline-block' : 'none';
+            toggleHidden(attachedFilesList, allItems.length > 0);
+            toggleHidden(clearAttachmentsBtn, allItems.length > 0);
         }
 
         pdfFileInput.addEventListener('change', async (e) => {
@@ -1656,7 +951,7 @@
             if (!files.length) return;
 
             attachmentUploadStatus.textContent = 'Uploading PDFs...';
-            attachmentUploadStatus.style.color = '#888';
+            setAppStatus(attachmentUploadStatus, null);
 
             try {
                 const newDocs = await uploadAttachments(files, '/upload_documents', 'documents');
@@ -1671,7 +966,7 @@
                 updateBrainstormAttachmentUI(addedCount);
             } catch (error) {
                 attachmentUploadStatus.textContent = `Error: ${error.message}`;
-                attachmentUploadStatus.style.color = '#ff4b4b';
+                setAppStatus(attachmentUploadStatus, 'error');
             }
 
             pdfFileInput.value = '';
@@ -1682,7 +977,7 @@
             if (!files.length) return;
 
             attachmentUploadStatus.textContent = 'Uploading code files...';
-            attachmentUploadStatus.style.color = '#888';
+            setAppStatus(attachmentUploadStatus, null);
 
             try {
                 const newFiles = await uploadAttachments(files, '/upload_code_files', 'files');
@@ -1697,7 +992,7 @@
                 updateBrainstormAttachmentUI(addedCount);
             } catch (error) {
                 attachmentUploadStatus.textContent = `Error: ${error.message}`;
-                attachmentUploadStatus.style.color = '#ff4b4b';
+                setAppStatus(attachmentUploadStatus, 'error');
             }
 
             codeFileInput.value = '';
@@ -1708,9 +1003,10 @@
             attachedDocuments = [];
             attachedCodeFiles = [];
             filesList.innerHTML = '';
-            attachedFilesList.style.display = 'none';
-            clearAttachmentsBtn.style.display = 'none';
+            toggleHidden(attachedFilesList, false);
+            toggleHidden(clearAttachmentsBtn, false);
             attachmentUploadStatus.textContent = '';
+            setAppStatus(attachmentUploadStatus, null);
         });
 
         algorithmCodeFileInput.addEventListener('change', async (e) => {
@@ -1718,7 +1014,7 @@
             if (!files.length) return;
 
             algorithmAttachmentStatus.textContent = 'Uploading code files...';
-            algorithmAttachmentStatus.style.color = '#888';
+            setAppStatus(algorithmAttachmentStatus, null);
 
             try {
                 const newFiles = await uploadAttachments(files, '/upload_code_files', 'files');
@@ -1733,18 +1029,18 @@
                 const totalChars = algorithmCodeFiles.reduce((sum, f) => sum + f.char_count, 0);
                 if (addedCount > 0) {
                     algorithmAttachmentStatus.textContent = `✓ Added ${addedCount} file(s). Total: ${algorithmCodeFiles.length} (${totalChars} chars)`;
-                    algorithmAttachmentStatus.style.color = '#28a745';
+                    setAppStatus(algorithmAttachmentStatus, 'success');
                 } else {
                     algorithmAttachmentStatus.textContent = `⚠ Files already attached. Total: ${algorithmCodeFiles.length}`;
-                    algorithmAttachmentStatus.style.color = '#e0a800';
+                    setAppStatus(algorithmAttachmentStatus, 'warn');
                 }
 
                 renderAttachmentBadges(algorithmFilesList, algorithmCodeFiles);
-                algorithmAttachedFilesList.style.display = algorithmCodeFiles.length ? 'block' : 'none';
-                clearAlgorithmAttachmentsBtn.style.display = algorithmCodeFiles.length ? 'inline-block' : 'none';
+                toggleHidden(algorithmAttachedFilesList, algorithmCodeFiles.length > 0);
+                toggleHidden(clearAlgorithmAttachmentsBtn, algorithmCodeFiles.length > 0);
             } catch (error) {
                 algorithmAttachmentStatus.textContent = `Error: ${error.message}`;
-                algorithmAttachmentStatus.style.color = '#ff4b4b';
+                setAppStatus(algorithmAttachmentStatus, 'error');
             }
 
             algorithmCodeFileInput.value = '';
@@ -1753,9 +1049,10 @@
         clearAlgorithmAttachmentsBtn.addEventListener('click', () => {
             algorithmCodeFiles = [];
             algorithmFilesList.innerHTML = '';
-            algorithmAttachedFilesList.style.display = 'none';
-            clearAlgorithmAttachmentsBtn.style.display = 'none';
+            toggleHidden(algorithmAttachedFilesList, false);
+            toggleHidden(clearAlgorithmAttachmentsBtn, false);
             algorithmAttachmentStatus.textContent = '';
+            setAppStatus(algorithmAttachmentStatus, null);
         });
 
         // Mode switching and API key elements
@@ -1794,12 +1091,12 @@
 
         // Show/hide config based on provider (only openrouter / llamacpp)
         const updateProviderConfig = () => {
-            openrouterConfig.style.display = 'none';
-            llamacppConfig.style.display = 'none';
+            openrouterConfig.classList.remove('is-visible');
+            llamacppConfig.classList.remove('is-visible');
             if (llmProviderSelect.value === 'openrouter') {
-                openrouterConfig.style.display = 'flex';
+                openrouterConfig.classList.add('is-visible');
             } else if (llmProviderSelect.value === 'llamacpp') {
-                llamacppConfig.style.display = 'flex';
+                llamacppConfig.classList.add('is-visible');
             }
         };
         updateProviderConfig();
@@ -1899,7 +1196,7 @@
                     // Hide Graph for Brainstorm
                     graphContainer.parentElement.style.display = 'none';
 
-                    addLogMessage(`<strong>User:</strong> ${message}`, { isHTML: true, color: '#a0a0ff' });
+                    addLogMessage(`<strong>User:</strong> ${message}`, { isHTML: true, color: APP_COLORS.user });
 
                     // Determine the correct API key for the selected provider
                     let selectedApiKey = openrouterApiKey;
@@ -1946,7 +1243,7 @@
                 },
                 onAttachCode: async (files) => {
                     attachmentUploadStatus.textContent = 'Uploading code files...';
-                    attachmentUploadStatus.style.color = '#888';
+                    setAppStatus(attachmentUploadStatus, null);
                     const newFiles = await uploadAttachments(files, '/upload_code_files', 'files');
                     let addedCount = 0;
                     newFiles.forEach(file => {
@@ -1974,11 +1271,8 @@
                 if (!autoRadio || !manualRadio || !manualControls) return;
 
                 const updateVisibility = () => {
-                    if (manualRadio.checked) {
-                        manualControls.style.display = 'flex';
-                    } else {
-                        manualControls.style.display = 'none';
-                    }
+                    toggleHidden(manualControls, manualRadio.checked);
+                    manualControls.style.display = manualRadio.checked ? 'flex' : 'none';
                 };
                 autoRadio.addEventListener('change', updateVisibility);
                 manualRadio.addEventListener('change', updateVisibility);
@@ -2048,7 +1342,7 @@
                 const manualControl = document.getElementById('algo-manual-width-control');
                 if (!mbtiRadio || !manualRadio || !manualControl) return;
                 const update = () => {
-                    manualControl.style.display = manualRadio.checked ? 'block' : 'none';
+                    toggleHidden(manualControl, manualRadio.checked);
                     algorithmMemCalc?.update();
                 };
                 mbtiRadio.addEventListener('change', update);
@@ -2159,7 +1453,7 @@
                     addLogMessage(`Error: ${result.message}`, { color: 'red' });
                     if (result.traceback) {
                         const pre = document.createElement('pre');
-                        pre.style.color = '#ff8c8c';
+                        pre.style.color = APP_COLORS.error;
                         pre.textContent = result.traceback;
                         logContainer.appendChild(pre);
                     }
@@ -2197,7 +1491,7 @@
                             cardHeader.textContent = `Module ${index + 1}: Interface Card`;
                             const cardPre = document.createElement('pre');
                             cardPre.textContent = module.card;
-                            cardPre.style.cssText = 'background-color:#1C1E25; padding:1rem; border-radius:var(--border-radius); white-space:pre-wrap;';
+                            cardPre.className = 'app-code-card';
                             const codeHeader = document.createElement('h3');
                             codeHeader.textContent = `Module ${index + 1}: Source Code`;
                             const codePre = document.createElement('pre');
@@ -2430,7 +1724,7 @@
                             updatePerplexityChart(stepKey, data.perplexity, stepLabel);
                         }
                         const anchorInfo = data.anchor_index !== undefined ? `[Anchor ${data.anchor_index + 1}/${data.anchor_count}] ` : '';
-                        appendDistilConsole(`${anchorInfo}[Epoch ${data.epoch}] Tokens: ${(data.token_count || 0).toLocaleString()} / ${(data.token_budget || 0).toLocaleString()} | QA: ${data.qa_pairs_count || 0}`, '#0ff');
+                        appendDistilConsole(`${anchorInfo}[Epoch ${data.epoch}] Tokens: ${(data.token_count || 0).toLocaleString()} / ${(data.token_budget || 0).toLocaleString()} | QA: ${data.qa_pairs_count || 0}`, APP_COLORS.info);
                     } else if (data.type === 'perplexity_update') {
                         if (data.perplexity !== undefined && typeof updatePerplexityChart === 'function') {
                             const stepKey = data.step !== undefined
@@ -2443,7 +1737,7 @@
                         }
                     }
                     if (data.type === 'distillation_complete') {
-                        appendDistilConsole(`✓ COMPLETE — Total QA Pairs: ${data.total_qa_pairs_count}`, '#0f0');
+                        appendDistilConsole(`✓ COMPLETE — Total QA Pairs: ${data.total_qa_pairs_count}`, APP_COLORS.success);
                         // Reset distillation buttons
                         const distilStartBtn = document.getElementById('start-distillation-btn');
                         const distilStopBtn = document.getElementById('stop-distillation-btn');
@@ -2452,8 +1746,8 @@
                             distilStartBtn.disabled = false;
                             distilStartBtn.textContent = "Start Distillation";
                         }
-                        if (distilStopBtn) distilStopBtn.style.display = 'none';
-                        if (distilDownloadBtn) distilDownloadBtn.style.display = '';
+                        if (distilStopBtn) toggleHidden(distilStopBtn, false);
+                        if (distilDownloadBtn) toggleHidden(distilDownloadBtn, true);
                     }
                 } catch (e) {
                     console.error("Error parsing distillation update", e);
@@ -2575,7 +1869,7 @@
             } else if (rawMessage.startsWith('DISTILLATION_LOG:')) {
                 const msg = rawMessage.replace('DISTILLATION_LOG:', '').trim();
                 if (typeof appendDistilConsole === 'function') {
-                    appendDistilConsole(msg, '#aaffaa');
+                    appendDistilConsole(msg, APP_COLORS.success);
                 }
 
             } else {

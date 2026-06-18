@@ -1,3 +1,28 @@
+# Release Notes — `0.1.4`
+
+**Tag:** `0.1.4`
+**Date:** 2026-06-17
+**Tagline:** "Unified Flux UI theme — app chrome adapts to NodeChat"
+
+## ✨ Features
+
+### App-wide theme redesign
+
+* **New `css/theme.css`** — glass surfaces, purple/cyan accents, pill controls, and dark luxury styling aligned with the NodeChat component aesthetic.
+* **NodeChat left untouched** — `css/node-chat.css` and `js/components/node-chat.js` are unchanged; the rest of the app adapts around the immutable chat component.
+* **Isolated chat mounts** — brainstorm and diagnostic chat sit in transparent `.section--chat-mount` frames so NodeChat renders with its native chrome.
+* **Updated surfaces** — settings panel, mode tabs, forms, attachments, memory estimator, logs, graph viewer, distillation console, and perplexity chart all use the new theme.
+* **Scoped form styles** — global inputs/buttons exclude `.node-chat` internals so chat styling is never overridden.
+
+### Files
+
+* `css/theme.css` — new app chrome design system
+* `index.html` — removed inline legacy CSS; semantic layout/classes; chart and log colors updated
+* `js/components/memory-calculator.js` — status uses CSS classes instead of inline hex colors
+* `deepthink/__init__.py` — version bump to `0.1.4`
+
+---
+
 # Release Notes — `0.1.3`
 
 **Tag:** `0.1.3`

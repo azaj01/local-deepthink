@@ -1,6 +1,6 @@
-__version__ = "0.1.3"
-__release_name__ = "code-file-attachments"
-__release_tag__ = "0.1.3"
+__version__ = "0.1.4"
+__release_name__ = "flux-app-theme"
+__release_tag__ = "0.1.4"
 
 # deepthink package initialization
 from .utils import clean_and_parse_json, execute_code_in_sandbox
